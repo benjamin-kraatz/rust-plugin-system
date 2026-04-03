@@ -123,28 +123,16 @@ Start in `docs/overview/index.md`, then follow:
 - `docs/plugins/native-json-catalog.md`
 - `docs/snippets/cli-recipes.md`
 
-## Phase 4: production contracts and packaging
+## Publish new versions
 
-Phase 4 adds the documentation layer for the more production-shaped parts of the playground:
+Make sure that the token from Kellnr is available in the environment as `CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN`.
 
-- compatibility and version windows
-- lifecycle and execution contracts
-- async execution metadata
-- trust, security, and Wasm sandboxing context
-- capability negotiation and graceful degradation
-- testing with `plugin-test-kit`
-- packaging and local distribution bundle flows
-
-Use this doc path from the root:
-
-- `docs/reference/production-contracts.md`
-- `docs/reference/version-compatibility.md`
-- `docs/reference/lifecycle-execution.md`
-- `docs/reference/trust-capabilities.md`
-- `docs/reference/wasm-sandboxing.md`
-- `docs/reference/testing-packaging.md`
-- `docs/guides/external-host-plugin.md`
-- `docs/guides/publishing.md`
+```bash
+export CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN=yourtokentokellnr
+LEVEL=$(./scripts/detect-release-level.sh)
+cargo release "$LEVEL" --execute --no-publish
+./scripts/publish-shared-crates.sh
+```
 
 ## License
 
