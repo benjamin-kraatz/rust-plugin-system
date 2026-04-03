@@ -120,7 +120,7 @@ jobs:
             fi
 
             # Skip if this version is already in the registry.
-            HTTP_STATUS=$(curl -sfo /dev/null -w "%{http_code}" \
+            HTTP_STATUS=$(curl -so /dev/null -w "%{http_code}" \
               "${REGISTRY_URL}/api/v1/crates/${PKG}/${VERSION}")
             if [ "$HTTP_STATUS" = "200" ]; then
               echo "  already published – skipping."
