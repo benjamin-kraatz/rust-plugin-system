@@ -1,3 +1,37 @@
+//! Dynamic library loader for the **Rust Plugin System**.
+//!
+//! This crate discovers and loads native JSON dynamic-library plugins (`.so` /
+//! `.dylib` / `.dll`) from a directory at runtime using
+//! [`libloading`](https://docs.rs/libloading).
+//!
+//! # How it works
+//!
+//! 1. [`load_plugins_from_directory`] scans a directory for files that look like
+//!    dynamic libraries.
+//! 2. For each file it calls the `plugin_manifest_json` symbol to obtain the
+//!    plugin's [`PluginManifest`].
+//! 3. Successfully loaded plugins are wrapped in a [`LoadedPlugin`] which exposes
+//!    typed `invoke` methods.
+//! 4. The collected plugins are returned in a [`PluginCatalog`] together with
+//!    any non-fatal loading warnings.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! use plugin_loader::load_plugins_from_directory;
+//!
+//! let catalog = load_plugins_from_directory("target/debug").unwrap();
+//! for plugin in &catalog.plugins {
+//!     println!("{} — {}", plugin.manifest().id, plugin.manifest().name);
+//! }
+//! ```
+//!
+//! # Safety
+//!
+//! Loading a dynamic library is inherently unsafe.  This crate uses `unsafe`
+//! internally to call the three C entry points exported by plugins and takes
+//! care to validate all returned pointers before dereferencing them.
+
 use std::ffi::{CString, c_char};
 use std::fs;
 use std::path::{Path, PathBuf};

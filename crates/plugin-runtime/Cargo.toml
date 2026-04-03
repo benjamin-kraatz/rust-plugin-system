@@ -1,7 +1,16 @@
 [package]
 name = "plugin-runtime"
-version = "0.1.0"
-edition = "2024"
+description = "Plugin runtime utilities for the Rust Plugin System — PluginSummary and response-rendering helpers shared by host applications."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "runtime", "plugin-system", "ffi"]
+categories = ["development-tools"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0.102"

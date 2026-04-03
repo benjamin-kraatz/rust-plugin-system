@@ -1,7 +1,16 @@
 [package]
 name = "plugin-test-kit"
-version = "0.1.0"
-edition = "2024"
+description = "Testing utilities for the Rust Plugin System — fluent builders for plugin manifests and actions, for use in unit and integration tests."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "testing", "plugin-system", "test-helpers"]
+categories = ["development-tools"]
+readme = "README.md"
 
 [dependencies]
 plugin-capabilities = { version = "0.1.0", path = "../plugin-capabilities" }

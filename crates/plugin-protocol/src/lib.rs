@@ -1,3 +1,42 @@
+//! Request/response protocol types for the **Rust Plugin System**.
+//!
+//! This crate defines the wire types that travel across the host ↔ plugin
+//! boundary at invocation time:
+//!
+//! * [`PluginRequest`] — sent by the host to invoke an action.
+//! * [`PluginResponse`] — returned by the plugin after execution.
+//! * [`InvocationContext`] — ambient information attached to each request
+//!   (host kind, workspace root, timeouts, trace IDs, …).
+//! * [`RuntimeContext`] — host capabilities and preferences announced before
+//!   invocation so the plugin can adapt its output.
+//!
+//! # Quick start
+//!
+//! ```rust
+//! use plugin_protocol::{PluginRequest, InvocationContext};
+//! use plugin_capabilities::HostKind;
+//! use serde_json::json;
+//!
+//! let request = PluginRequest {
+//!     plugin_id: "my-plugin".to_string(),
+//!     action_id: "greet".to_string(),
+//!     payload: Some(json!({"name": "Alice"})),
+//!     context: InvocationContext::for_host(HostKind::Cli),
+//! };
+//! ```
+//!
+//! # Main types
+//!
+//! | Type | Purpose |
+//! |---|---|
+//! | [`PluginRequest`] | An action invocation sent from host to plugin |
+//! | [`PluginResponse`] | The result returned by the plugin |
+//! | [`InvocationContext`] | Per-request ambient metadata |
+//! | [`RuntimeContext`] | Host capability advertisement |
+//! | [`OutputBlock`] | A single labelled output fragment (text, JSON, markdown, …) |
+//! | [`ExecutionMetadata`] | Mode, timing, and job-tracking info attached to a response |
+//! | [`NegotiationOutcome`] | Capability negotiation result (Ready / Degraded / Rejected) |
+
 pub use plugin_capabilities::{
     CapabilityAvailability, CapabilityRequirement, DegradationSeverity, ExecutionMode, HostKind,
     LifecycleState,

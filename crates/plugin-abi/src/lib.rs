@@ -1,3 +1,31 @@
+//! ABI-stable plugin loader for the **Rust Plugin System**.
+//!
+//! This crate loads plugins built with [`abi_stable`](https://docs.rs/abi_stable)
+//! rather than the plain C FFI used by `plugin-loader`.  Because `abi_stable`
+//! enforces layout compatibility across Rust compiler updates you can ship new
+//! plugin versions without recompiling the host, making it ideal for
+//! long-lived applications.
+//!
+//! # How it works
+//!
+//! 1. [`load_plugins_from_directory`] scans a directory for shared libraries
+//!    whose filename contains `"abi_stable"`.
+//! 2. Each library is loaded via `abi_stable`'s root-module infrastructure which
+//!    validates the ABI layout at load time.
+//! 3. Successfully loaded plugins are wrapped in a [`LoadedAbiPlugin`] that
+//!    exposes typed `invoke` methods through the stable vtable.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! use plugin_abi::load_plugins_from_directory;
+//!
+//! let catalog = load_plugins_from_directory("target/debug").unwrap();
+//! for plugin in &catalog.plugins {
+//!     println!("{} — {}", plugin.manifest().id, plugin.manifest().name);
+//! }
+//! ```
+
 use std::fs;
 use std::path::{Path, PathBuf};
 

@@ -1,7 +1,16 @@
 [package]
 name = "plugin-capabilities"
-version = "0.1.0"
-edition = "2024"
+description = "Capability and constraint types for the Rust Plugin System — host kinds, trust levels, lifecycle hooks, and execution metadata."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "capabilities", "plugin-system", "ffi"]
+categories = ["development-tools", "api-bindings"]
+readme = "README.md"
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }

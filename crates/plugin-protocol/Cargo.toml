@@ -1,7 +1,16 @@
 [package]
 name = "plugin-protocol"
-version = "0.1.0"
-edition = "2024"
+description = "Request/response protocol types for the Rust Plugin System — invocation context, execution metadata, and capability negotiation."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "protocol", "plugin-system", "ffi"]
+categories = ["development-tools", "api-bindings"]
+readme = "README.md"
 
 [dependencies]
 plugin-capabilities = { version = "0.1.0", path = "../plugin-capabilities" }

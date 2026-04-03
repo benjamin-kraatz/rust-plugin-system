@@ -1,7 +1,16 @@
 [package]
 name = "host-core"
-version = "0.1.0"
-edition = "2024"
+description = "Shared host orchestration for the Rust Plugin System — the Playground loader, host-fit assessment, capability negotiation, and invocation helpers."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "host", "plugin-system", "runtime"]
+categories = ["development-tools"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0.102"

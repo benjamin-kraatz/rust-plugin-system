@@ -1,3 +1,14 @@
+//! Plugin runtime utilities for the **Rust Plugin System**.
+//!
+//! This crate contains lightweight helpers that are useful in both host
+//! applications and tests:
+//!
+//! * [`PluginSummary`] — a compact view of a plugin derived from its
+//!   [`PluginManifest`], suitable for list
+//!   displays and log messages.
+//! * [`render_response`] — formats a [`PluginResponse`]
+//!   into a human-readable string for terminal output.
+
 use plugin_manifest::PluginManifest;
 use plugin_protocol::{OutputBlock, PluginResponse};
 

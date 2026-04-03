@@ -1,7 +1,16 @@
 [package]
 name = "plugin-wasm"
-version = "0.1.0"
-edition = "2024"
+description = "WebAssembly plugin sandbox for the Rust Plugin System — loads and executes WASM plugins via Wasmtime with full memory isolation."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "wasm", "wasmtime", "plugin-system"]
+categories = ["development-tools", "wasm"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0.102"

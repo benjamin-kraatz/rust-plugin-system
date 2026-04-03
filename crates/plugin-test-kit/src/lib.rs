@@ -1,3 +1,34 @@
+//! Testing utilities for the **Rust Plugin System**.
+//!
+//! `plugin-test-kit` provides fluent builder types that make it easy to
+//! construct test fixtures for plugin manifests and actions without having to
+//! fill in every optional field by hand.
+//!
+//! # Main types
+//!
+//! * [`ManifestBuilder`] — builds a [`PluginManifest`]
+//!   with sensible defaults so tests only need to specify fields that matter.
+//! * [`ActionBuilder`] — builds a single [`PluginAction`].
+//!
+//! # Example
+//!
+//! ```rust
+//! use plugin_test_kit::{ManifestBuilder, ActionBuilder};
+//!
+//! let manifest = ManifestBuilder::new("my-plugin", "My Plugin", "0.1.0")
+//!     .description("A test plugin")
+//!     .action(
+//!         ActionBuilder::new("greet")
+//!             .label("Greet")
+//!             .description("Returns a greeting")
+//!             .build(),
+//!     )
+//!     .build();
+//!
+//! assert_eq!(manifest.id, "my-plugin");
+//! assert_eq!(manifest.actions.len(), 1);
+//! ```
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::io;

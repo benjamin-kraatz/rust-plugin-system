@@ -1,3 +1,27 @@
+//! C FFI boundary helpers for the **Rust Plugin System**.
+//!
+//! Plugin dynamic libraries and their host loaders communicate via a small set
+//! of C-callable symbols.  This crate provides:
+//!
+//! * The canonical symbol name constants ([`MANIFEST_SYMBOL`], [`INVOKE_SYMBOL`],
+//!   [`FREE_SYMBOL`]).
+//! * Serialisation helpers ([`manifest_to_json_ptr`], [`response_to_json_ptr`])
+//!   that turn Rust values into heap-allocated C strings the host can read.
+//! * Deserialisation helpers ([`request_from_json_ptr`]) that parse the host's
+//!   request JSON back into a typed [`PluginRequest`].
+//! * Memory helpers ([`copy_c_string`], [`reclaim_c_string`]) for safe ownership
+//!   transfer across the FFI boundary.
+//!
+//! Plugin authors generally do **not** call these directly — use the
+//! `export_plugin!` macro from `plugin-sdk` instead.  Host authors use these
+//! constants when loading a plugin library via `libloading`.
+//!
+//! # Safety
+//!
+//! All functions that accept raw pointers are marked `unsafe`.  Callers must
+//! guarantee that the pointer is either null or points to a valid
+//! NUL-terminated C string for the duration of the call.
+
 use std::ffi::{CStr, CString, c_char};
 
 use plugin_manifest::PluginManifest;

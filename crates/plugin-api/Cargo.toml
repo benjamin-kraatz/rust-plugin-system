@@ -1,7 +1,16 @@
 [package]
 name = "plugin-api"
-version = "0.1.0"
-edition = "2024"
+description = "C FFI boundary helpers for the Rust Plugin System — symbol constants, JSON-over-FFI serialization, and C string management."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "ffi", "plugin-system", "cdylib"]
+categories = ["development-tools", "api-bindings"]
+readme = "README.md"
 
 [dependencies]
 plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }

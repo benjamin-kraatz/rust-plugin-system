@@ -1,3 +1,46 @@
+//! Shared host orchestration for the **Rust Plugin System**.
+//!
+//! `host-core` is the crate that host application authors depend on.  It ties
+//! together the loader, runtime, and protocol crates into a single high-level
+//! [`Playground`] façade that any host surface (CLI, TUI, GUI, web, service) can
+//! use without reimplementing plugin discovery, invocation context setup, or
+//! capability negotiation.
+//!
+//! # Quick start
+//!
+//! ```rust,no_run
+//! use host_core::Playground;
+//! use plugin_protocol::HostKind;
+//! use serde_json::json;
+//!
+//! let playground = Playground::load_default().expect("failed to load plugins");
+//!
+//! // List all loaded plugins
+//! for summary in playground.summaries() {
+//!     println!("{}: {}", summary.id, summary.description);
+//! }
+//!
+//! // Invoke a plugin action
+//! let response = playground
+//!     .invoke("my-plugin", "greet", Some(json!({"name": "Alice"})), HostKind::Cli)
+//!     .expect("invocation failed");
+//! println!("{}", response.summary);
+//! ```
+//!
+//! # Plugin directory
+//!
+//! By default [`Playground::load_default`] looks for plugins in the directory
+//! pointed to by the `RUST_PLUGIN_SYSTEM_PLUGIN_DIR` environment variable, falling
+//! back to `target/debug` when the variable is not set.
+//!
+//! # Main types
+//!
+//! | Type | Purpose |
+//! |---|---|
+//! | [`Playground`] | High-level plugin loader and invocation façade |
+//! | [`HostFitAssessment`] | Compatibility check result between a plugin and the current host |
+//! | [`HostFitStatus`] | Summary verdict of the assessment (Compatible / Degraded / Incompatible) |
+
 use std::{
     path::{Path, PathBuf},
     time::Instant,

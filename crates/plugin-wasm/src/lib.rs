@@ -1,3 +1,40 @@
+//! WebAssembly plugin sandbox for the **Rust Plugin System**.
+//!
+//! This crate loads and executes plugins compiled to WebAssembly (`.wasm`) or
+//! WebAssembly Text format (`.wat`) using [Wasmtime](https://wasmtime.dev/).
+//! Each invocation runs inside a fresh Wasmtime [`Store`](wasmtime::Store),
+//! providing strong memory isolation between the host and the plugin.
+//!
+//! # Plugin layout
+//!
+//! A WASM plugin lives in a directory that contains:
+//!
+//! * `wasm-plugin.json` — the plugin's [`PluginManifest`](plugin_manifest::PluginManifest)
+//!   serialised as JSON.
+//! * A `.wasm` or `.wat` module file exporting `alloc`, `invoke_json`, and
+//!   `free` symbols.
+//!
+//! # How it works
+//!
+//! 1. [`load_plugins_from_workspace`] scans subdirectories for `wasm-plugin.json`
+//!    files.
+//! 2. Each manifest is paired with its compiled module; the module is compiled
+//!    once and cached in a [`LoadedWasmPlugin`].
+//! 3. On invocation a fresh Wasmtime `Store` + `Instance` is created, memory is
+//!    linearised, and the JSON-encoded request is written into WASM linear memory
+//!    before calling the `invoke_json` export.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! use plugin_wasm::load_plugins_from_workspace;
+//!
+//! let catalog = load_plugins_from_workspace("plugins").unwrap();
+//! for plugin in &catalog.plugins {
+//!     println!("{} — {}", plugin.manifest().id, plugin.manifest().name);
+//! }
+//! ```
+
 use std::fs;
 use std::path::{Path, PathBuf};
 

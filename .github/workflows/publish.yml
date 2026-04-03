@@ -1,0 +1,168 @@
+name: Publish to crates.io
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (do not actually publish)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  publish:
+    name: Publish crates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify workspace builds
+        run: >-
+          cargo build --workspace --locked
+          --exclude host-egui
+          --exclude host-iced
+          --exclude host-dioxus-desktop
+
+      - name: Run tests
+        run: >-
+          cargo test --workspace --all-targets --locked
+          --exclude host-egui
+          --exclude host-iced
+          --exclude host-dioxus-desktop
+
+      - name: Publish plugin-capabilities
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-capabilities
+          else
+            cargo publish -p plugin-capabilities
+            sleep 30
+          fi
+
+      - name: Publish plugin-manifest
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-manifest
+          else
+            cargo publish -p plugin-manifest
+            sleep 30
+          fi
+
+      - name: Publish plugin-protocol
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-protocol
+          else
+            cargo publish -p plugin-protocol
+            sleep 30
+          fi
+
+      - name: Publish plugin-api
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-api
+          else
+            cargo publish -p plugin-api
+            sleep 30
+          fi
+
+      - name: Publish plugin-runtime
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-runtime
+          else
+            cargo publish -p plugin-runtime
+            sleep 30
+          fi
+
+      - name: Publish plugin-loader
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-loader
+          else
+            cargo publish -p plugin-loader
+            sleep 30
+          fi
+
+      - name: Publish plugin-sdk
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-sdk
+          else
+            cargo publish -p plugin-sdk
+            sleep 30
+          fi
+
+      - name: Publish plugin-abi
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-abi
+          else
+            cargo publish -p plugin-abi
+            sleep 30
+          fi
+
+      - name: Publish plugin-wasm
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-wasm
+          else
+            cargo publish -p plugin-wasm
+            sleep 30
+          fi
+
+      - name: Publish plugin-test-kit
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p plugin-test-kit
+          else
+            cargo publish -p plugin-test-kit
+            sleep 30
+          fi
+
+      - name: Publish host-core
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            cargo publish --dry-run -p host-core
+          else
+            cargo publish -p host-core
+          fi

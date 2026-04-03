@@ -1,7 +1,16 @@
 [package]
 name = "plugin-loader"
-version = "0.1.0"
-edition = "2024"
+description = "Dynamic library loader for the Rust Plugin System — discovers and loads native JSON plugins from a directory at runtime."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "loader", "dynamic-loading", "plugin-system"]
+categories = ["development-tools", "api-bindings"]
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0.102"

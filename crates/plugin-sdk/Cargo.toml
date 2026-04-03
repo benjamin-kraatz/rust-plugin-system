@@ -1,7 +1,16 @@
 [package]
 name = "plugin-sdk"
-version = "0.1.0"
-edition = "2024"
+description = "Plugin SDK for the Rust Plugin System — the JsonPlugin trait, export_plugin! macro, and re-exports for building native dynamic-library plugins."
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+keywords = ["plugin", "sdk", "plugin-system", "ffi"]
+categories = ["development-tools", "api-bindings"]
+readme = "README.md"
 
 [dependencies]
 plugin-api = { version = "0.1.0", path = "../plugin-api" }
