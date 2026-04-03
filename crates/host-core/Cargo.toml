@@ -11,13 +11,13 @@ rust-version.workspace = true
 
 [dependencies]
 anyhow = "1.0.102"
-plugin-loader = { version = "0.1.0", path = "../plugin-loader" }
-plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }
-plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
-plugin-runtime = { version = "0.1.0", path = "../plugin-runtime" }
+plugin-loader = { version = "0.1.0", path = "../plugin-loader", registry = "dzwei-registry" }
+plugin-manifest = { version = "0.1.0", path = "../plugin-manifest", registry = "dzwei-registry" }
+plugin-protocol = { version = "0.1.0", path = "../plugin-protocol", registry = "dzwei-registry" }
+plugin-runtime = { version = "0.1.0", path = "../plugin-runtime", registry = "dzwei-registry" }
 semver = "1.0.27"
 serde_json = "1.0.149"
 
 [dev-dependencies]
-plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
+plugin-protocol = { version = "0.1.0", path = "../plugin-protocol", registry = "dzwei-registry" }
 serde_json = "1.0.149"

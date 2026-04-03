@@ -10,7 +10,7 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-plugin-api = { version = "0.1.0", path = "../plugin-api" }
-plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }
-plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
+plugin-api = { version = "0.1.0", path = "../plugin-api", registry = "dzwei-registry" }
+plugin-manifest = { version = "0.1.0", path = "../plugin-manifest", registry = "dzwei-registry" }
+plugin-protocol = { version = "0.1.0", path = "../plugin-protocol", registry = "dzwei-registry" }
 serde_json = "1.0.149"

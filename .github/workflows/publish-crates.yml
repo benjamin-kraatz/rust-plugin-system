@@ -1,5 +1,5 @@
 # Publishes the shared Rust crates to the self-hosted kellnr registry at
-# https://crates.your-domain.com.
+# https://crates.d-zwei.de.
 #
 # Prerequisites (one-time, in the GitHub repository settings):
 #   - Add a secret named DZWEI_CRATES_REG_TOKEN containing a kellnr API token
@@ -70,7 +70,7 @@ jobs:
           default = "dzwei-registry"
 
           [registries.dzwei-registry]
-          index = "sparse+https://crates.your-domain.com/api/v1/crates/index/"
+          index = "sparse+https://crates.d-zwei.de/api/v1/crates/"
           EOF
 
       - name: Publish crates
@@ -79,7 +79,7 @@ jobs:
           DRY_RUN='${{ inputs.dry_run }}'
           [ -z "$DRY_RUN" ] && DRY_RUN=false
 
-          REGISTRY_URL="https://crates.your-domain.com"
+          REGISTRY_URL="https://crates.d-zwei.de"
           METADATA_FILE=$(mktemp)
           trap 'rm -f "$METADATA_FILE"' EXIT
           cargo metadata --no-deps --format-version 1 > "$METADATA_FILE"

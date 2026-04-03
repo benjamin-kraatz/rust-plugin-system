@@ -57,3 +57,16 @@ dbg_macro = "deny"
 todo = "deny"
 unwrap_used = "deny"
 
+
+[patch.dzwei-registry]
+plugin-capabilities = { path = "crates/plugin-capabilities" }
+plugin-manifest     = { path = "crates/plugin-manifest" }
+plugin-protocol     = { path = "crates/plugin-protocol" }
+plugin-api          = { path = "crates/plugin-api" }
+plugin-sdk          = { path = "crates/plugin-sdk" }
+plugin-abi          = { path = "crates/plugin-abi" }
+plugin-loader       = { path = "crates/plugin-loader" }
+plugin-runtime      = { path = "crates/plugin-runtime" }
+plugin-wasm         = { path = "crates/plugin-wasm" }
+host-core           = { path = "crates/host-core" }
+plugin-test-kit     = { path = "crates/plugin-test-kit" }

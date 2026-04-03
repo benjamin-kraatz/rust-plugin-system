@@ -230,7 +230,7 @@ for user-wide config):
 
 ```toml
 [registries.dzwei-registry]
-index = "sparse+https://crates.d-zwei.de/api/v1/crates/index/"
+index = "sparse+https://crates.d-zwei.de/api/v1/crates/"
 ```
 
 ### Declare dependencies

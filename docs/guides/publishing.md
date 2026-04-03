@@ -13,7 +13,7 @@ crates:
 
 ```toml
 [registries.dzwei-registry]
-index = "sparse+https://crates.your-domain.com/api/v1/crates/index/"
+index = "sparse+https://crates.your-domain.com/api/v1/crates/"
 ```
 
 Then declare dependencies as usual, naming the registry:

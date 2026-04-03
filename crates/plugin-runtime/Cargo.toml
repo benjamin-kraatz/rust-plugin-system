@@ -11,8 +11,8 @@ rust-version.workspace = true
 
 [dependencies]
 anyhow = "1.0.102"
-plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }
-plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
+plugin-manifest = { version = "0.1.0", path = "../plugin-manifest", registry = "dzwei-registry" }
+plugin-protocol = { version = "0.1.0", path = "../plugin-protocol", registry = "dzwei-registry" }
 
 [dev-dependencies]
-plugin-test-kit = { version = "0.1.0", path = "../plugin-test-kit" }
+plugin-test-kit = { version = "0.1.0", path = "../plugin-test-kit", registry = "dzwei-registry" }
