@@ -34,6 +34,11 @@ members = [
     "plugins/web-widget",
     "plugins/tui-tools",
     "plugins/service-hooks",
+    "examples/minimal-loader",
+    "examples/hot-reload",
+    "examples/abi-evolution",
+    "examples/capability-negotiation",
+    "examples/plugin-discovery",
 ]
 resolver = "2"
 

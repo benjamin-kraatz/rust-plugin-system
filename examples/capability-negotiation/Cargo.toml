@@ -1,0 +1,16 @@
+[package]
+name = "example-capability-negotiation"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "capability-negotiation"
+path = "src/main.rs"
+
+[dependencies]
+host-core = { path = "../../crates/host-core" }
+plugin-manifest = { path = "../../crates/plugin-manifest" }
+plugin-protocol = { path = "../../crates/plugin-protocol" }
+plugin-capabilities = { path = "../../crates/plugin-capabilities" }
+serde_json = "1"
+anyhow = "1"

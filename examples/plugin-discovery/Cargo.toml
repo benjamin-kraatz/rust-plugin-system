@@ -1,0 +1,15 @@
+[package]
+name = "example-plugin-discovery"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "plugin-discovery"
+path = "src/main.rs"
+
+[dependencies]
+host-core = { path = "../../crates/host-core" }
+plugin-manifest = { path = "../../crates/plugin-manifest" }
+plugin-protocol = { path = "../../crates/plugin-protocol" }
+serde_json = "1"
+anyhow = "1"
