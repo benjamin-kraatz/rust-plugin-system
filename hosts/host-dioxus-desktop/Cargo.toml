@@ -1,7 +1,7 @@
 [package]
 name = "host-dioxus-desktop"
 publish = false
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 autobins = false
 
@@ -13,6 +13,6 @@ path = "src/main.rs"
 anyhow = "1.0.102"
 dioxus = { version = "0.7.4", features = ["desktop"] }
 dioxus-desktop = "0.7.4"
-host-core = { version = "0.1.0", path = "../../crates/host-core" }
-plugin-manifest = { version = "0.1.0", path = "../../crates/plugin-manifest" }
-plugin-protocol = { version = "0.1.0", path = "../../crates/plugin-protocol" }
+host-core = { version = "0.2.0", path = "../../crates/host-core" }
+plugin-manifest = { version = "0.2.0", path = "../../crates/plugin-manifest" }
+plugin-protocol = { version = "0.2.0", path = "../../crates/plugin-protocol" }

@@ -1,13 +1,13 @@
 [package]
 name = "service-hooks"
 publish = false
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-plugin-sdk = { version = "0.1.0", path = "../../crates/plugin-sdk" }
-plugin-capabilities = { version = "0.1.0", path = "../../crates/plugin-capabilities" }
+plugin-sdk = { version = "0.2.0", path = "../../crates/plugin-sdk" }
+plugin-capabilities = { version = "0.2.0", path = "../../crates/plugin-capabilities" }
 serde_json = "1.0.149"

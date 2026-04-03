@@ -1,6 +1,6 @@
 [package]
 name = "plugin-sdk"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Plugin authoring SDK for JSON manifests and exports."
 publish = true
@@ -10,7 +10,7 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-plugin-api = { version = "0.1.0", path = "../plugin-api", registry = "dzwei-registry" }
-plugin-manifest = { version = "0.1.0", path = "../plugin-manifest", registry = "dzwei-registry" }
-plugin-protocol = { version = "0.1.0", path = "../plugin-protocol", registry = "dzwei-registry" }
+plugin-api = { version = "0.2.0", path = "../plugin-api", registry = "dzwei-registry" }
+plugin-manifest = { version = "0.2.0", path = "../plugin-manifest", registry = "dzwei-registry" }
+plugin-protocol = { version = "0.2.0", path = "../plugin-protocol", registry = "dzwei-registry" }
 serde_json = "1.0.149"

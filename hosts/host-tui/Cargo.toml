@@ -1,13 +1,13 @@
 [package]
 name = "host-tui"
 publish = false
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
 crossterm = "0.29.0"
-host-core = { version = "0.1.0", path = "../../crates/host-core" }
-plugin-manifest = { version = "0.1.0", path = "../../crates/plugin-manifest" }
-plugin-protocol = { version = "0.1.0", path = "../../crates/plugin-protocol" }
+host-core = { version = "0.2.0", path = "../../crates/host-core" }
+plugin-manifest = { version = "0.2.0", path = "../../crates/plugin-manifest" }
+plugin-protocol = { version = "0.2.0", path = "../../crates/plugin-protocol" }
 ratatui = "0.30.0"
