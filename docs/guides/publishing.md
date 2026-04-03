@@ -61,6 +61,8 @@ cargo publish --dry-run --registry github -p plugin-sdk
 cargo publish --registry github -p plugin-sdk
 ```
 
+For CI, this repository includes `.github/workflows/publish-github-packages.yml`, which publishes the shared crates in dependency order with `packages: write` permissions.
+
 If you want to lock a crate to a single registry, add:
 
 ```toml

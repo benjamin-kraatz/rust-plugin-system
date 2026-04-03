@@ -1,0 +1,77 @@
+name: Publish GitHub Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Run cargo publish in dry-run mode
+        required: false
+        type: boolean
+        default: true
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-github-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  publish:
+    name: Publish shared crates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Configure Cargo registry
+        run: |
+          mkdir -p "$HOME/.cargo"
+          cat > "$HOME/.cargo/config.toml" <<EOF
+          [registries.github]
+          index = "sparse+https://github.com/${{ github.repository }}/index"
+          EOF
+
+      - name: Publish shared crates
+        env:
+          CARGO_REGISTRIES_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          dry_run=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            dry_run="--dry-run"
+          fi
+
+          packages=(
+            plugin-capabilities
+            plugin-manifest
+            plugin-protocol
+            plugin-api
+            plugin-sdk
+            plugin-abi
+            plugin-loader
+            plugin-runtime
+            plugin-wasm
+            host-core
+            plugin-test-kit
+          )
+
+          for package in "${packages[@]}"; do
+            echo "Publishing ${package}"
+            cargo publish ${dry_run} --locked --registry github -p "${package}"
+          done
