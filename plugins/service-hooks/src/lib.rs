@@ -75,7 +75,7 @@ fn plan_hook_set(request: PluginRequest) -> Result<PluginResponse, String> {
         "target_base_url",
         "https://hooks.internal.example",
     );
-    let retry_limit = u64_field(&request.payload, "retry_limit", 3).max(1).min(6);
+    let retry_limit = u64_field(&request.payload, "retry_limit", 3).clamp(1, 6);
     let events = list_of_strings(&request.payload, "events", &["deploy.succeeded".to_owned()]);
 
     let hooks = events
