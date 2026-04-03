@@ -124,6 +124,11 @@ Once the commands above feel natural, use these docs as the production-minded re
 - `docs/reference/wasm-sandboxing.md` - what the current Wasmtime sandbox does and does not provide
 - `docs/reference/testing-packaging.md` - `plugin-test-kit`, package fixtures, and example bundle flows
 
+If you are building outside this workspace, continue with:
+
+- `docs/guides/external-host-plugin.md` - create your own host and plugin project
+- `docs/guides/publishing.md` - publish the shared crates to crates.io or GitHub Packages
+
 A practical Phase 4 inspection loop is:
 
 ```bash

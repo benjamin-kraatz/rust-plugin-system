@@ -2,6 +2,12 @@
 name = "plugin-api"
 version = "0.1.0"
 edition = "2024"
+description = "FFI helpers for exporting and importing JSON plugin entry points."
+publish = true
+readme = "../../README.md"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }

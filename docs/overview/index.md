@@ -65,3 +65,4 @@ The safest and most portable track in the repo. Great for untrusted extensions, 
 4. Compare the Phase 3 TUI, desktop, web, and service hosts with `docs/hosts/surface-comparison.md`.
 5. Explore the Phase 4 contract layer with `docs/reference/production-contracts.md`.
 6. Use the ABI-stable and WASM tracks to connect those contracts back to real runtime trade-offs.
+7. For external projects, read `docs/guides/external-host-plugin.md` and `docs/guides/publishing.md`.

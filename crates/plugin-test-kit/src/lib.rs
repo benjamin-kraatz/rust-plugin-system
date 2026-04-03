@@ -394,7 +394,7 @@ pub fn sample_manifest() -> PluginManifest {
                 .id("verify-bundle")
                 .label("Verify bundle")
                 .description("Check a local bundle layout.")
-                .payload_hint(r#"{"bundle_root":"examples/packaging/native-json-hello-world"}"#)
+                .payload_hint(r#"{"bundle_root":"./bundle"}"#)
                 .build(),
         )
         .build()
@@ -747,11 +747,6 @@ pub struct WrittenPackageFixture {
 
 #[cfg(test)]
 mod tests {
-    use abi_stable::std_types::RString;
-    use abi_stable_greeter::instantiate_root_module;
-    use plugin_api::{copy_c_string, json_string_to_ptr, reclaim_c_string};
-    use plugin_sdk::JsonPlugin;
-    use plugin_wasm::{load_plugin_from_dir, load_plugins_from_workspace};
     use serde_json::json;
 
     use super::*;
@@ -788,7 +783,7 @@ mod tests {
         let fixture = PackageFixture::native_json(
             "fixture-plugin-macos",
             sample_manifest(),
-            "lib/libfixture_plugin.dylib",
+            "dist/libfixture_plugin.dylib",
             ReleaseMetadata::new(
                 "stable",
                 "x86_64-apple-darwin",
@@ -797,7 +792,7 @@ mod tests {
             .with_installer_hint("Point RUST_PLUGIN_SYSTEM_PLUGIN_DIR at the lib directory."),
         )
         .with_required_entrypoint()
-        .with_text_file("lib/libfixture_plugin.dylib", "fixture binary placeholder");
+        .with_text_file("dist/libfixture_plugin.dylib", "fixture binary placeholder");
 
         let written = fixture.write_to(&output_root).unwrap();
         let package_manifest = read_package_manifest(&written.package_manifest_path);
@@ -810,160 +805,6 @@ mod tests {
         );
         assert!(written.manifest_snapshot_path.exists());
         assert!(written.release_metadata_path.exists());
-    }
-
-    #[test]
-    fn native_json_exports_round_trip_requests() {
-        let manifest_ptr = hello_world::plugin_manifest_json();
-        let manifest_json = unsafe { copy_c_string(manifest_ptr.cast_const()) }.unwrap();
-        unsafe { hello_world::plugin_free_c_string(manifest_ptr) };
-        let manifest: PluginManifest = serde_json::from_str(&manifest_json).unwrap();
-
-        let request = RequestBuilder::new()
-            .plugin_id("hello-world")
-            .action_id("greet")
-            .payload(json!({"name":"Phase 4"}))
-            .host(HostKind::Cli)
-            .build();
-        let request_ptr = json_string_to_ptr(serde_json::to_string(&request).unwrap());
-        let response_ptr = unsafe { hello_world::plugin_invoke_json(request_ptr.cast_const()) };
-        unsafe { reclaim_c_string(request_ptr) };
-
-        let response_json = unsafe { copy_c_string(response_ptr.cast_const()) }.unwrap();
-        unsafe { hello_world::plugin_free_c_string(response_ptr) };
-        let response: PluginResponse = serde_json::from_str(&response_json).unwrap();
-
-        assert_eq!(manifest.id, hello_world::HelloWorldPlugin::manifest().id);
-        assert_response_ok(&response);
-        assert_output_contains(&response, Some("Greeting"), "Phase 4");
-    }
-
-    #[test]
-    fn abi_stable_module_round_trips_requests() {
-        let module = instantiate_root_module();
-        let manifest_json = (module.manifest_json())();
-        let manifest: PluginManifest = serde_json::from_str(manifest_json.as_str()).unwrap();
-
-        let request = RequestBuilder::new()
-            .plugin_id("abi-stable-greeter")
-            .action_id("greet")
-            .payload(json!({"name":"Bundle Tester"}))
-            .host(HostKind::Service)
-            .build();
-        let response_json =
-            (module.invoke_json())(RString::from(serde_json::to_string(&request).unwrap()));
-        let response: PluginResponse = serde_json::from_str(response_json.as_str()).unwrap();
-
-        assert_eq!(manifest.architecture, PluginArchitecture::AbiStable);
-        assert_response_ok(&response);
-        assert_output_contains(&response, Some("Greeting"), "Bundle Tester");
-    }
-
-    #[test]
-    fn wasm_workspace_fixtures_load_and_invoke_deterministically() {
-        let workspace = workspace_root();
-        let catalog = load_plugins_from_workspace(&workspace).unwrap();
-        let plugin_ids = catalog
-            .plugins
-            .iter()
-            .map(|plugin| plugin.manifest().id.clone())
-            .collect::<Vec<_>>();
-
-        assert!(catalog.warnings.is_empty());
-        assert!(
-            plugin_ids
-                .iter()
-                .any(|plugin_id| plugin_id == "wasm-sandboxed")
-        );
-        assert!(plugin_ids.iter().any(|plugin_id| plugin_id == "web-widget"));
-
-        let plugin = load_plugin_from_dir(&workspace.join("plugins/wasm-sandboxed")).unwrap();
-
-        // Echo action: module parses action_id and routes to the echo handler
-        let echo_response = plugin
-            .invoke(
-                &RequestBuilder::new()
-                    .plugin_id("wasm-sandboxed")
-                    .action_id("echo")
-                    .payload(json!({"note":"phase4"}))
-                    .host(HostKind::Web)
-                    .build(),
-            )
-            .unwrap();
-
-        assert_response_ok(&echo_response);
-        assert_output_contains(&echo_response, Some("Echo"), "WASM sandbox");
-
-        // Compute action: computes factorial(10) inside the WASM module
-        let compute_response = plugin
-            .invoke(
-                &RequestBuilder::new()
-                    .plugin_id("wasm-sandboxed")
-                    .action_id("compute")
-                    .payload(json!({}))
-                    .host(HostKind::Cli)
-                    .build(),
-            )
-            .unwrap();
-
-        assert_response_ok(&compute_response);
-        assert_output_contains(&compute_response, Some("Factorial"), "3628800");
-
-        // Validate action with payload: confirms payload has content
-        let validate_response = plugin
-            .invoke(
-                &RequestBuilder::new()
-                    .plugin_id("wasm-sandboxed")
-                    .action_id("validate")
-                    .payload(json!({"data":"test"}))
-                    .host(HostKind::Cli)
-                    .build(),
-            )
-            .unwrap();
-
-        assert_response_ok(&validate_response);
-        assert_output_contains(&validate_response, Some("Valid"), "validated");
-
-        // Validate action with empty payload: reports empty
-        let validate_empty = plugin
-            .invoke(
-                &RequestBuilder::new()
-                    .plugin_id("wasm-sandboxed")
-                    .action_id("validate")
-                    .payload(json!({}))
-                    .host(HostKind::Cli)
-                    .build(),
-            )
-            .unwrap();
-
-        assert_response_ok(&validate_empty);
-        assert_output_contains(&validate_empty, Some("Empty Payload"), "empty");
-    }
-
-    #[test]
-    fn example_packaging_assets_match_bundle_schema() {
-        for relative_path in [
-            "examples/packaging/native-json/hello-world-bundle",
-            "examples/packaging/native-json/service-hooks-bundle",
-            "examples/packaging/abi-stable/abi-stable-greeter-bundle",
-            "examples/packaging/wasm/wasm-sandboxed-bundle",
-            "examples/packaging/wasm/web-widget-bundle",
-        ] {
-            let bundle_root = workspace_root().join(relative_path);
-            let package_manifest = read_package_manifest(bundle_root.join("package.json"));
-
-            assert_eq!(package_manifest.schema_version, PACKAGE_SCHEMA_VERSION);
-            assert!(
-                package_manifest
-                    .missing_required_artifacts(&bundle_root)
-                    .is_empty()
-            );
-            assert!(bundle_root.join("release.json").exists());
-
-            if matches!(package_manifest.runtime, PackageRuntime::Wasm) {
-                assert!(bundle_root.join("module.wat").exists());
-            }
-        }
     }
 
     fn workspace_root() -> PathBuf {

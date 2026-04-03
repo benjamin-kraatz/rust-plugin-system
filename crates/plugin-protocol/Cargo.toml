@@ -2,6 +2,12 @@
 name = "plugin-protocol"
 version = "0.1.0"
 edition = "2024"
+description = "JSON request and response protocol for plugin invocations."
+publish = true
+readme = "../../README.md"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 plugin-capabilities = { version = "0.1.0", path = "../plugin-capabilities" }

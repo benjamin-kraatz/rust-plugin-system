@@ -2,6 +2,12 @@
 name = "plugin-abi"
 version = "0.1.0"
 edition = "2024"
+description = "ABI-stable helpers for plugin exports and invocation adapters."
+publish = true
+readme = "../../README.md"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 abi_stable = "0.11.3"

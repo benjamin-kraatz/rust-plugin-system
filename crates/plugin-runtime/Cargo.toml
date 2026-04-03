@@ -2,6 +2,12 @@
 name = "plugin-runtime"
 version = "0.1.0"
 edition = "2024"
+description = "Runtime rendering and shared summaries for plugin host output."
+publish = true
+readme = "../../README.md"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 anyhow = "1.0.102"

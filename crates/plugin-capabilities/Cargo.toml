@@ -2,6 +2,12 @@
 name = "plugin-capabilities"
 version = "0.1.0"
 edition = "2024"
+description = "Shared enums and capability metadata for plugin hosts and plugins."
+publish = true
+readme = "../../README.md"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }

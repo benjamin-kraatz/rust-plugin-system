@@ -2,6 +2,12 @@
 name = "plugin-sdk"
 version = "0.1.0"
 edition = "2024"
+description = "Plugin authoring SDK for JSON manifests and exports."
+publish = true
+readme = "../../README.md"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 
 [dependencies]
 plugin-api = { version = "0.1.0", path = "../plugin-api" }

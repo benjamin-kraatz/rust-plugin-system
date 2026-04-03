@@ -143,6 +143,8 @@ Use this doc path from the root:
 - `docs/reference/trust-capabilities.md`
 - `docs/reference/wasm-sandboxing.md`
 - `docs/reference/testing-packaging.md`
+- `docs/guides/external-host-plugin.md`
+- `docs/guides/publishing.md`
 
 ## License
 

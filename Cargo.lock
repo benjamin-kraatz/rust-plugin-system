@@ -6333,15 +6333,9 @@ dependencies = [
 name = "plugin-test-kit"
 version = "0.1.0"
 dependencies = [
- "abi-stable-greeter",
- "abi_stable",
- "hello-world",
- "plugin-api",
  "plugin-capabilities",
  "plugin-manifest",
  "plugin-protocol",
- "plugin-sdk",
- "plugin-wasm",
  "serde",
  "serde_json",
 ]
