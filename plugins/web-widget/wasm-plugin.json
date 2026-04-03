@@ -19,10 +19,70 @@
   "tags": ["wasm", "web", "widget", "advanced"],
   "actions": [
     {
-      "id": "render-widget",
-      "label": "Render widget",
-      "description": "Return a widget-oriented response from a sandboxed module.",
-      "payload_hint": "{\"theme\":\"dark\",\"variant\":\"incident\"}",
+      "id": "render-badge",
+      "label": "Render badge",
+      "description": "Generates a text-based status badge from the WASM sandbox.",
+      "payload_hint": "{\"label\":\"STATUS\",\"value\":\"OK\"}",
+      "contract": {
+        "execution_mode": "sync",
+        "idempotent": true,
+        "mutates_workspace": false,
+        "timeout_ms": 2000,
+        "constraints": {
+          "required": [
+            {
+              "key": "stdout-json",
+              "detail": "Hosts must surface the badge payload."
+            }
+          ],
+          "optional": [
+            {
+              "key": "rich-ui",
+              "detail": "Browser-style hosts can render styled badge elements.",
+              "fallback": "CLI hosts print the badge as ASCII art."
+            }
+          ],
+          "max_payload_bytes": 2048,
+          "network_access": "none",
+          "sandbox_level": "wasm"
+        }
+      }
+    },
+    {
+      "id": "render-table",
+      "label": "Render data table",
+      "description": "Generates a markdown-formatted data table with system metrics.",
+      "payload_hint": "{\"metrics\":[{\"name\":\"CPU\",\"value\":\"42%\"}]}",
+      "contract": {
+        "execution_mode": "sync",
+        "idempotent": true,
+        "mutates_workspace": false,
+        "timeout_ms": 2000,
+        "constraints": {
+          "required": [
+            {
+              "key": "stdout-json",
+              "detail": "Hosts must surface the table payload."
+            }
+          ],
+          "optional": [
+            {
+              "key": "rich-ui",
+              "detail": "Browser-style hosts can render HTML tables.",
+              "fallback": "CLI hosts print markdown table syntax."
+            }
+          ],
+          "max_payload_bytes": 4096,
+          "network_access": "none",
+          "sandbox_level": "wasm"
+        }
+      }
+    },
+    {
+      "id": "render-progress",
+      "label": "Render progress bar",
+      "description": "Generates a text-based progress bar with status and ETA information.",
+      "payload_hint": "{\"task\":\"Deployment\",\"percent\":70}",
       "contract": {
         "execution_mode": "async",
         "idempotent": true,
@@ -45,19 +105,19 @@
           "required": [
             {
               "key": "stdout-json",
-              "detail": "Hosts must surface the structured widget payload."
+              "detail": "Hosts must surface the progress payload."
             }
           ],
           "optional": [
             {
               "key": "rich-ui",
-              "detail": "Browser-style hosts can render cards instead of plain summaries.",
-              "fallback": "CLI hosts can print the widget body as markdown or JSON."
+              "detail": "Browser-style hosts can render animated progress bars.",
+              "fallback": "CLI hosts print ASCII progress bars."
             },
             {
-              "key": "sandboxed-runtime",
-              "detail": "Hosts can label the WASM isolation boundary.",
-              "fallback": "Fallback hosts can still execute the module without isolation-specific chrome."
+              "key": "async-jobs",
+              "detail": "Async-capable hosts can stream progress updates.",
+              "fallback": "The progress bar renders as a static snapshot."
             }
           ],
           "max_payload_bytes": 4096,
