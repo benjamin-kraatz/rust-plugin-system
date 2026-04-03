@@ -23,7 +23,6 @@ if supports_host(&manifest, HostKind::Iced) { /* show it */ }
 ```rust
 const BG_DARK: egui::Color32 = egui::Color32::from_rgb(0x0b, 0x10, 0x20);
 const ACCENT_MINT: egui::Color32 = egui::Color32::from_rgb(0x87, 0xf0, 0xd4);
-
 fn apply_theme(ctx: &egui::Context) {
     let mut visuals = egui::Visuals::dark();
     visuals.panel_fill = BG_DARK;
@@ -43,7 +42,7 @@ egui::CentralPanel::default()
     .show_inside(ui, |ui| { /* main content */ });
 ```
 
-## egui: CollapsingHeader for metadata grid
+## egui: CollapsingHeader, RichText, and clickable card
 
 ```rust
 egui::CollapsingHeader::new(egui::RichText::new("Manifest Details").strong())
@@ -54,13 +53,6 @@ egui::CollapsingHeader::new(egui::RichText::new("Manifest Details").strong())
             ui.end_row();
         });
     });
-```
-
-## egui: RichText with colors and clickable card
-
-```rust
-ui.label(egui::RichText::new(&manifest.name).color(TEXT_PRIMARY).strong());
-ui.label(egui::RichText::new(&manifest.description).color(TEXT_MUTED).small());
 
 let frame = if selected {
     egui::Frame::new().fill(ACTIVE_BG).stroke(egui::Stroke::new(1.5, ACCENT_MINT))
@@ -84,37 +76,27 @@ fn app_theme() -> Theme {
 }
 ```
 
-## Iced: text_editor for multiline JSON
+## Iced: text_editor, Container, and Button styles
 
 ```rust
 text_editor(&state.payload_content)
-    .on_action(Message::PayloadEditorAction)
-    .height(180)
+    .on_action(Message::PayloadEditorAction).height(180)
     .style(|theme, status| {
-        let mut base = text_editor::default(theme, status);
-        base.background = Background::Color(SURFACE);
-        base.border = Border { radius: 6.0.into(), width: 1.0, color: BORDER };
-        base
+        let mut s = text_editor::default(theme, status);
+        s.background = Background::Color(SURFACE);
+        s
     })
-```
-
-## Iced: Container + Button custom styles
-
-```rust
-container(sidebar).padding(16).width(Length::FillPortion(1)).style(|_| container::Style {
+container(sidebar).padding(16).style(|_| container::Style {
     background: Some(Background::Color(PANEL)),
     border: Border { radius: 10.0.into(), width: 1.0, color: BORDER },
-    shadow: Shadow::default(), snap: false, text_color: Some(TEXT),
+    ..Default::default()
 });
-
 button(content).on_press(Message::SelectPlugin(id.clone()))
     .style(move |_theme, status| button::Style {
         background: Some(Background::Color(match status {
             button::Status::Hovered => lighten(card_bg, 0.06), _ => card_bg,
         })),
-        text_color: TEXT,
-        border: Border { radius: 8.0.into(), width: 1.0, color: border_color },
-        shadow: Shadow::default(), snap: false,
+        ..Default::default()
     })
 ```
 
@@ -123,7 +105,6 @@ button(content).on_press(Message::SelectPlugin(id.clone()))
 ```rust
 #[derive(Debug, Clone)]
 enum Message { SelectPlugin(String), SelectAction(String), InvokeSelected }
-
 fn update(state: &mut IcedHostApp, message: Message) {
     match message {
         Message::SelectPlugin(id) => { state.selected_plugin_id = Some(id); }
@@ -135,7 +116,7 @@ fn update(state: &mut IcedHostApp, message: Message) {
 
 ---
 
-## Dioxus: CSS style system as functions
+## Dioxus: CSS style functions and reactive signals
 
 ```rust
 mod styles {
@@ -147,17 +128,12 @@ fn card_style() -> String {
     format!("border: 1px solid {}; border-radius: 10px; background: {};",
         styles::BORDER, styles::PANEL)
 }
-```
 
-## Dioxus: Reactive signals for selection state
-
-```rust
 let mut selected_plugin_id = use_signal(|| None::<String>);
-let mut selected_action_id = use_signal(|| None::<String>);
 let mut payload_input = use_signal(|| "{}".to_owned());
 ```
 
-## Dioxus: Extracted component with EventHandler
+## Dioxus: Component with EventHandler and collapsible details
 
 ```rust
 #[component]
@@ -169,11 +145,7 @@ fn PluginCard(manifest: PluginManifest, selected: bool, on_select: EventHandler<
         }
     }
 }
-```
 
-## Dioxus: Collapsible section with details/summary
-
-```rust
 details { open: true,
     summary { style: "{details_summary_style()}", "📋 Manifest Details" }
     div {
