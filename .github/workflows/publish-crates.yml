@@ -90,11 +90,11 @@ jobs:
             plugin-manifest
             plugin-protocol
             plugin-api
-            plugin-sdk
             plugin-abi
-            plugin-loader
             plugin-runtime
             plugin-wasm
+            plugin-sdk
+            plugin-loader
             host-core
             plugin-test-kit
           )
