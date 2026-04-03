@@ -79,12 +79,8 @@ async fn invoke(
 
 ```rust
 type ApiResponse = Result<Json<Value>, (StatusCode, Json<Value>)>;
-
 fn error_response(status: StatusCode, code: &str, message: String) -> (StatusCode, Json<Value>) {
-    (status, Json(json!({
-        "ok": false,
-        "error": { "code": code, "message": message }
-    })))
+    (status, Json(json!({ "ok": false, "error": { "code": code, "message": message } })))
 }
 ```
 
@@ -100,13 +96,12 @@ async fn health(State(state): State<AppState>) -> Json<Value> {
 }
 ```
 
-## Find-or-404 helpers for plugins and actions
+## Find-or-404 helpers
 
 ```rust
 fn find_manifest<'a>(manifests: &'a [PluginManifest], id: &str) -> Option<&'a PluginManifest> {
     manifests.iter().find(|m| m.id == id)
 }
-
 fn find_action<'a>(manifest: &'a PluginManifest, id: &str) -> Option<&'a PluginAction> {
     manifest.actions.iter().find(|a| a.id == id)
 }
@@ -115,14 +110,8 @@ fn find_action<'a>(manifest: &'a PluginManifest, id: &str) -> Option<&'a PluginA
 ## Example curl calls
 
 ```bash
-# List all plugins
-curl http://127.0.0.1:5000/plugins
-
-# Inspect a specific plugin
-curl http://127.0.0.1:5000/plugins/formatter
-
-# Invoke an action with a JSON payload
+curl http://127.0.0.1:5000/plugins                          # list all plugins
+curl http://127.0.0.1:5000/plugins/formatter                 # inspect a manifest
 curl -X POST http://127.0.0.1:5000/plugins/formatter/actions/pretty-json/invoke \
-     -H 'Content-Type: application/json' \
-     -d '{"hello":"world","n":42}'
+     -H 'Content-Type: application/json' -d '{"hello":"world"}'
 ```

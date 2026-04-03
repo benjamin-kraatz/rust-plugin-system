@@ -5,12 +5,11 @@
 ```rust
 let playground = Playground::load_default()?;
 let manifests = playground.manifests();
-let payload_text = default_payload_text(&action);
 let response = playground.invoke(&plugin_id, &action_id, payload, HostKind::Egui);
 let output = render_response(&response);
 ```
 
-## Check whether a plugin supports the current host
+## Check host support
 
 ```rust
 if supports_host(&manifest, HostKind::Iced) { /* show it */ }
@@ -122,13 +121,11 @@ fn update(state: &mut IcedHostApp, message: Message) {
 mod styles {
     pub const BG: &str = "#0b1020";
     pub const PANEL: &str = "#121933";
-    pub const ACCENT: &str = "#70a5ff";
 }
 fn card_style() -> String {
     format!("border: 1px solid {}; border-radius: 10px; background: {};",
         styles::BORDER, styles::PANEL)
 }
-
 let mut selected_plugin_id = use_signal(|| None::<String>);
 let mut payload_input = use_signal(|| "{}".to_owned());
 ```
