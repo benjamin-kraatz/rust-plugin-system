@@ -6,7 +6,7 @@ support, user management, public and private crates, and optional transparent
 caching of crates.io packages.
 
 This project's shared crates are published to a kellnr instance running at
-`https://crates.your-domain.com`.
+`https://crates.d-zwei.de`.
 
 ---
 
@@ -37,11 +37,11 @@ The fastest way to get kellnr running is the official Docker image:
 docker run -d \
   --name kellnr \
   -p 8000:8000 \
-  -v kellnr-data:/opt/kellnr/data \
+  -v kellnr-data:/var/lib/kellnr \
   -e KELLNR_ORIGIN__HOSTNAME=localhost \
   -e KELLNR_ORIGIN__PORT=8000 \
   -e KELLNR_ORIGIN__PROTOCOL=http \
-  ghcr.io/kellnr/kellnr:latest
+  ghcr.io/kellnr/kellnr:6
 ```
 
 Open `http://localhost:8000` and log in with the default admin credentials
@@ -60,14 +60,14 @@ A minimal `docker-compose.yml` for a self-contained deployment:
 ```yaml
 services:
   kellnr:
-    image: ghcr.io/kellnr/kellnr:latest
+    image: ghcr.io/kellnr/kellnr:6
     restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
-      - kellnr-data:/opt/kellnr/data
+      - kellnr-data:/var/lib/kellnr
     environment:
-      KELLNR_ORIGIN__HOSTNAME: crates.example.com
+      KELLNR_ORIGIN__HOSTNAME: crates.d-zwei.de
       KELLNR_ORIGIN__PORT: 443
       KELLNR_ORIGIN__PROTOCOL: https
       # Optional: enable crates.io caching (recommended)
@@ -93,7 +93,7 @@ resource.
 
 1. Open your Coolify dashboard and navigate to your project.
 2. Click **Add Resource → Docker Image**.
-3. Enter the image: `ghcr.io/kellnr/kellnr:latest`.
+3. Enter the image: `ghcr.io/kellnr/kellnr:6`.
 
 ### Step 2 — Ports
 
@@ -103,12 +103,12 @@ port publicly — Coolify handles routing.
 
 ### Step 3 — Persistent storage
 
-kellnr stores its database, crate files, and index in `/opt/kellnr/data`.
+kellnr stores its database, crate files, and index in `/var/lib/kellnr`.
 Add a persistent volume:
 
 | Mount path | Volume name |
 |---|---|
-| `/opt/kellnr/data` | `kellnr-data` (or any name) |
+| `/var/lib/kellnr` | `kellnr-data` (or any name) |
 
 Without this, all data is lost on container restart.
 
@@ -118,20 +118,20 @@ Add the following environment variables in the **Environment** tab:
 
 | Variable | Value | Notes |
 |---|---|---|
-| `KELLNR_ORIGIN__HOSTNAME` | `crates.your-domain.com` | Your domain |
+| `KELLNR_ORIGIN__HOSTNAME` | `crates.d-zwei.de` | Your domain |
 | `KELLNR_ORIGIN__PORT` | `443` | 443 for HTTPS |
 | `KELLNR_ORIGIN__PROTOCOL` | `https` | Use `http` for local-only |
 | `KELLNR_REGISTRY__CACHE_NUM_THREADS` | `4` | Enables crates.io caching |
 
 ### Step 5 — Custom domain
 
-In the **Domains** tab, add your domain (`crates.your-domain.com`).  Coolify will
+In the **Domains** tab, add your domain (`crates.d-zwei.de`).  Coolify will
 provision a Let's Encrypt certificate automatically if you have a wildcard DNS
 record pointing to your server.
 
 ### Step 6 — Deploy
 
-Click **Deploy**.  After the container starts, open `https://crates.your-domain.com`
+Click **Deploy**.  After the container starts, open `https://crates.d-zwei.de`
 and complete [first-time setup](#first-time-setup).
 
 ---
@@ -140,7 +140,7 @@ and complete [first-time setup](#first-time-setup).
 
 ### Change the admin password
 
-Log in at `https://crates.your-domain.com` with `admin` / `admin`.
+Log in at `https://crates.d-zwei.de` with `admin` / `admin`.
 
 1. Click the user icon (top right) → **Settings**.
 2. Enter a new password and save.
@@ -170,7 +170,7 @@ kellnr is configured entirely through environment variables.  Key options:
 | `KELLNR_ORIGIN__HOSTNAME` | `localhost` | Public hostname of the registry |
 | `KELLNR_ORIGIN__PORT` | `8000` | Public port (use 443 for HTTPS behind a proxy) |
 | `KELLNR_ORIGIN__PROTOCOL` | `http` | `http` or `https` |
-| `KELLNR_REGISTRY__DATA_DIR` | `/opt/kellnr/data` | Where crate files and the index are stored |
+| `KELLNR_REGISTRY__DATA_DIR` | `/var/lib/kellnr` | Where crate files and the index are stored |
 | `KELLNR_REGISTRY__CACHE_NUM_THREADS` | `0` | Set to ≥ 1 to enable crates.io caching |
 | `KELLNR_REGISTRY__MAX_CRATE_SIZE` | `10` | Max upload size in MB |
 | `KELLNR_REGISTRY__AUTH_REQUIRED` | `false` | Require auth for all read operations |
@@ -230,7 +230,7 @@ for user-wide config):
 
 ```toml
 [registries.dzwei-registry]
-index = "sparse+https://crates.your-domain.com/api/v1/crates/index/"
+index = "sparse+https://crates.d-zwei.de/api/v1/crates/index/"
 ```
 
 ### Declare dependencies
@@ -306,7 +306,7 @@ on `plugin-capabilities`):
 
 ## Web UI overview
 
-The kellnr web UI is available at `https://crates.your-domain.com`.
+The kellnr web UI is available at `https://crates.d-zwei.de`.
 
 | Section | What you can do |
 |---|---|
@@ -424,7 +424,7 @@ cargo update --registry dzwei-registry
 Or delete the cached index:
 
 ```bash
-rm -rf ~/.cargo/registry/index/*crates.your-domain.com*
+rm -rf ~/.cargo/registry/index/*crates.d-zwei.de*
 ```
 
 ### Private crate downloaded without auth
@@ -442,10 +442,10 @@ enforce authentication.
 ```nginx
 server {
     listen 443 ssl;
-    server_name crates.your-domain.com;
+    server_name crates.d-zwei.de;
 
-    ssl_certificate     /etc/letsencrypt/live/crates.your-domain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/crates.your-domain.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/crates.d-zwei.de/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/crates.d-zwei.de/privkey.pem;
 
     client_max_body_size 50M;  # Allow large .crate uploads
 
@@ -471,7 +471,7 @@ Coolify's **Domains** tab — no Nginx config required.
 
 ### Backup
 
-All persistent state is in the volume mounted at `/opt/kellnr/data`.  Back up
+All persistent state is in the volume mounted at `/var/lib/kellnr`.  Back up
 this directory:
 
 ```bash
@@ -488,16 +488,16 @@ the WAL journal present.
 ### Upgrading kellnr
 
 ```bash
-docker pull ghcr.io/kellnr/kellnr:latest
+docker pull ghcr.io/kellnr/kellnr:6
 docker stop kellnr
 docker rm kellnr
 docker run -d --name kellnr \
   -p 8000:8000 \
-  -v kellnr-data:/opt/kellnr/data \
-  -e KELLNR_ORIGIN__HOSTNAME=crates.your-domain.com \
+  -v kellnr-data:/var/lib/kellnr \
+  -e KELLNR_ORIGIN__HOSTNAME=crates.d-zwei.de \
   -e KELLNR_ORIGIN__PORT=443 \
   -e KELLNR_ORIGIN__PROTOCOL=https \
-  ghcr.io/kellnr/kellnr:latest
+  ghcr.io/kellnr/kellnr:6
 ```
 
 kellnr runs database migrations automatically on startup.  Always back up
