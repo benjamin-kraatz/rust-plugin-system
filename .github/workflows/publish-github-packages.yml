@@ -44,7 +44,7 @@ jobs:
           mkdir -p "$HOME/.cargo"
           cat > "$HOME/.cargo/config.toml" <<EOF
           [registries.github]
-          index = "sparse+https://github.com/${{ github.repository }}/index"
+          index = "sparse+https://github.com/${{ github.repository }}/index/"
           EOF
 
       - name: Publish shared crates
