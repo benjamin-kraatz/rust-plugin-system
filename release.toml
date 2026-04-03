@@ -1,0 +1,55 @@
+# cargo-release workspace configuration.
+#
+# Run a dry-run preview (no changes written):
+#   cargo release patch
+#
+# Execute a real release (bumps versions, commits, tags, publishes):
+#   cargo release patch --execute
+#   cargo release minor --execute
+#   cargo release major --execute
+#
+# The CI release.yml workflow wraps this with --no-confirm and the right
+# registry token set via CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN.
+#
+# Reference: https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
+
+# All 11 publishable crates share the same version number (lockstep strategy).
+# When you run `cargo release` at the workspace root `--workspace` flag is NOT
+# needed because we list packages explicitly in CI; for local use any of:
+#   cargo release patch -p plugin-capabilities -p plugin-manifest … --execute
+# or rely on the CI workflow which passes the full -p list.
+shared-version = true
+
+# Target the private kellnr registry instead of crates.io.
+registry = "dzwei-registry"
+
+# Git tag created for each release.
+tag-name = "v{{version}}"
+
+# Human-readable tag annotation shown in GitHub releases.
+tag-message = "Release v{{version}}"
+
+# Commit message for the version-bump commit.
+pre-release-commit-message = "chore: release v{{version}}"
+
+# Regenerate CHANGELOG.md at the workspace root before the release commit.
+# All publishable crates live in crates/<name>/, so ../../ is always the workspace root.
+# The hook also git-adds the file so it lands in the version-bump commit.
+pre-release-hook = [
+    "sh", "-c",
+    "git-cliff --workdir ../.. --output ../../CHANGELOG.md --tag v{{version}} && git add ../../CHANGELOG.md"
+]
+
+# Push the bump commit and tag to origin after publishing.
+push = true
+push-remote = "origin"
+
+# Do not GPG-sign tags (no GPG infra assumed).
+sign-tag = false
+sign-commit = false
+
+# Publish to the registry after bumping.
+publish = true
+
+# Allow dirty working trees only in CI (workflow checks out clean).
+allow-branch = ["main", "feat/*", "release/*"]

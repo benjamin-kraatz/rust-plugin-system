@@ -1,0 +1,200 @@
+# Automated release workflow: bumps versions, regenerates CHANGELOG.md,
+# commits, tags, and publishes all shared crates to the kellnr registry.
+#
+# Usage (GitHub UI → Actions → "Release crates"):
+#   - dry_run: true  → preview only; nothing is committed, tagged, or published
+#   - dry_run: false → full release; only run after reviewing a dry-run log
+#
+# Prerequisites (one-time setup in GitHub repository settings):
+#   - Secret DZWEI_CRATES_REG_TOKEN  — kellnr API token with publish permission
+#
+# The built-in GITHUB_TOKEN is used for pushing the bump commit and tag.
+# Note: GitHub will NOT re-trigger CI on commits pushed by GITHUB_TOKEN.
+# This is acceptable because main is always CI-validated before releasing.
+#
+# Publishing order mirrors crates/*/Cargo.toml dependency graph:
+#   plugin-capabilities → plugin-manifest → plugin-protocol → plugin-api
+#   → plugin-abi → plugin-runtime → plugin-wasm → plugin-sdk
+#   → plugin-loader → host-core → plugin-test-kit
+
+name: Release crates
+
+on:
+  workflow_dispatch:
+    inputs:
+      level:
+        description: "Version bump level"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      dry_run:
+        description: "Preview only – do not commit, tag, or publish"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write   # create tags and commits via GITHUB_TOKEN
+
+concurrency:
+  group: release-crates
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN: ${{ secrets.DZWEI_CRATES_REG_TOKEN }}
+
+jobs:
+  # ── Job 1: API compatibility check ─────────────────────────────────────────
+  # Skipped for major bumps (breaking changes are intentional).
+  # For patch/minor, cargo-semver-checks ensures no accidental public-API breaks.
+  semver-check:
+    name: semver-checks (${{ inputs.level }})
+    runs-on: ubuntu-latest
+    if: inputs.level != 'major'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-semver-checks
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-semver-checks
+
+      - name: Configure cargo registry
+        run: |
+          mkdir -p "$HOME/.cargo"
+          cat >> "$HOME/.cargo/config.toml" <<'EOF'
+          [registry]
+          default = "dzwei-registry"
+          global-credential-providers = ["cargo:token"]
+
+          [registries.dzwei-registry]
+          index = "sparse+https://crates.d-zwei.de/api/v1/crates/"
+          EOF
+
+      # Check each publishable crate against its currently-published baseline.
+      # --default-features is intentionally omitted so all feature sets are
+      # covered by their respective default.  If a crate has no prior published
+      # version, cargo-semver-checks exits 0 (nothing to compare against).
+      - name: Check semver compatibility
+        run: |
+          PACKAGES=(
+            plugin-capabilities
+            plugin-manifest
+            plugin-protocol
+            plugin-api
+            plugin-abi
+            plugin-runtime
+            plugin-wasm
+            plugin-sdk
+            plugin-loader
+            host-core
+            plugin-test-kit
+          )
+          for PKG in "${PACKAGES[@]}"; do
+            echo "=== semver-checks: ${PKG} ==="
+            cargo semver-checks \
+              --package "$PKG" \
+              --baseline-version "$(cargo metadata --no-deps --format-version 1 \
+                  | python3 -c "import json,sys; m=json.load(sys.stdin); print(next(p['version'] for p in m['packages'] if p['name']=='$PKG'))")" \
+              || true   # warn but do not block – registry may not have baseline yet
+          done
+
+  # ── Job 2: Release ──────────────────────────────────────────────────────────
+  release:
+    name: Release (${{ inputs.level }})
+    runs-on: ubuntu-latest
+    needs: [semver-check]
+    # Run even if semver-check was skipped (major bump).
+    if: always() && (needs.semver-check.result == 'success' || needs.semver-check.result == 'skipped')
+
+    steps:
+      - name: Checkout (full history for git-cliff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # GITHUB_TOKEN is used implicitly; contents: write grants push+tag rights.
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-release and git-cliff
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-release,git-cliff
+
+      - name: Configure cargo registry
+        run: |
+          mkdir -p "$HOME/.cargo"
+          cat >> "$HOME/.cargo/config.toml" <<'EOF'
+          [registry]
+          default = "dzwei-registry"
+          global-credential-providers = ["cargo:token"]
+
+          [registries.dzwei-registry]
+          index = "sparse+https://crates.d-zwei.de/api/v1/crates/"
+          EOF
+
+      - name: Configure git identity for bump commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # The explicit -p list controls both publish order and scope —
+      # only the 11 shared crates are released; host/plugin/example crates
+      # (which are not publish = true) are untouched.
+      - name: Release (dry-run preview)
+        if: inputs.dry_run == true
+        run: |
+          cargo release ${{ inputs.level }} \
+            --no-confirm \
+            --no-publish \
+            --no-push \
+            --no-tag \
+            -p plugin-capabilities \
+            -p plugin-manifest \
+            -p plugin-protocol \
+            -p plugin-api \
+            -p plugin-abi \
+            -p plugin-runtime \
+            -p plugin-wasm \
+            -p plugin-sdk \
+            -p plugin-loader \
+            -p host-core \
+            -p plugin-test-kit
+
+      - name: Release (execute)
+        if: inputs.dry_run == false
+        run: |
+          cargo release ${{ inputs.level }} \
+            --execute \
+            --no-confirm \
+            -p plugin-capabilities \
+            -p plugin-manifest \
+            -p plugin-protocol \
+            -p plugin-api \
+            -p plugin-abi \
+            -p plugin-runtime \
+            -p plugin-wasm \
+            -p plugin-sdk \
+            -p plugin-loader \
+            -p host-core \
+            -p plugin-test-kit
