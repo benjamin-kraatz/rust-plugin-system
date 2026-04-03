@@ -114,9 +114,10 @@ jobs:
 
           # Space-separated list of all workspace package names (used to classify
           # deps as "same registry" vs crates.io when building index entries).
-          WORKSPACE_PKGS=$(python3 - < "$METADATA_FILE" <<'PYEOF'
-          import json, sys
-          m = json.load(sys.stdin)
+          WORKSPACE_PKGS=$(METADATA_FILE="$METADATA_FILE" python3 - <<'PYEOF'
+          import json, sys, os
+          with open(os.environ["METADATA_FILE"]) as f:
+              m = json.load(f)
           print(" ".join(p["name"] for p in m["packages"]))
           PYEOF
           )
