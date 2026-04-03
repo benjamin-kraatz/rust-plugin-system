@@ -19,8 +19,10 @@ use plugin_wasm::WasmPluginCatalog;
     about = "CLI host for the Rust plugin system playground"
 )]
 struct Cli {
+    /// Directory containing plugin binaries and manifests
     #[arg(long, default_value_os_t = default_plugin_dir())]
     plugin_dir: PathBuf,
+    /// Root directory of the workspace (used for WASM plugin discovery)
     #[arg(long, default_value_os_t = std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))]
     workspace_root: PathBuf,
     #[command(subcommand)]
@@ -29,13 +31,20 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// List all discovered plugins with their architecture and action count
     List,
+    /// Show detailed manifest metadata for a specific plugin
     Inspect {
+        /// The unique plugin identifier (e.g., "hello-world", "config-provider")
         plugin_id: String,
     },
+    /// Invoke a plugin action with an optional JSON payload
     Run {
+        /// The unique plugin identifier
         plugin_id: String,
+        /// The action to invoke (e.g., "greet", "lookup")
         action_id: String,
+        /// Optional JSON payload string (default: "{}")
         payload: Option<String>,
     },
 }
