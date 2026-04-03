@@ -26,11 +26,11 @@ This track is for:
 
 The repository now has all three tracks represented in working form:
 
-- **Native JSON dylib track** through the shared `plugin-loader`
+- **Native JSON dylib track** through the shared `plugin-loader`, including both the starter plugins and the expanded practical catalog (`config-provider`, `filesystem-tools`, `data-pipeline`, `metrics-observer`, `service-hooks`, `tui-tools`)
 - **ABI-stable dylib track** through `crates/plugin-abi` and the `abi-stable-*` plugins
 - **WASM sandboxed track** through `crates/plugin-wasm` and WAT-backed modules executed by Wasmtime
 
-The next layer of work is expanding these from minimal runnable examples into richer, more production-shaped ecosystems.
+The next layer of work is continuing to deepen each track from runnable course examples into richer, more production-shaped ecosystems.
 
 ## Current commands
 

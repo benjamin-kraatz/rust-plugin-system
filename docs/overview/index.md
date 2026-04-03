@@ -37,6 +37,6 @@ The safest and most portable track in the repo. Great for untrusted extensions, 
 
 1. Read the high-level docs in `docs/`.
 2. Start with the CLI host and the simplest plugins.
-3. Compare the same plugin concepts in TUI and GUI hosts.
-4. Explore ABI-stable and WASM tracks once the basics feel natural.
-
+3. Use `docs/plugins/native-json-catalog.md` to walk from the foundation plugins into the expanded Phase 2 practical catalog.
+4. Compare the same plugin concepts in TUI and GUI hosts.
+5. Explore ABI-stable and WASM tracks once the basics feel natural.

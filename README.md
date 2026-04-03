@@ -27,13 +27,16 @@ The goal is not just to show code that works, but to make the trade-offs clear e
 
 ## Current focus
 
-The first implementation slice establishes:
+The current implementation slice establishes:
 
 - a Cargo workspace
 - a shared JSON-based plugin protocol
 - a native runtime-loading path
 - multiple host apps that consume the same plugin model
 - a documentation backbone for the broader course experience
+- a practical native plugin catalog that now includes:
+  - foundation examples: `hello-world`, `logger`, `formatter`, `transformer`, `command-pack`, `ui-panel`
+  - Phase 2 examples: `config-provider`, `filesystem-tools`, `data-pipeline`, `metrics-observer`, `service-hooks`, `tui-tools`
 
 ## Quickstart
 
@@ -41,11 +44,17 @@ The first implementation slice establishes:
 cargo build --workspace
 cargo run -p host-cli -- list
 cargo run -p host-cli -- run hello-world greet '{"name":"Rustacean"}'
+cargo run -p host-cli -- run config-provider merge-layers '{"defaults":{"service":{"port":8080}},"environment":{"service":{"port":8081}},"overrides":{"service":{"host":"127.0.0.1"}}}'
+cargo run -p host-cli -- run data-pipeline summarize-field '{"records":[{"duration":12.5},{"duration":7.5}],"field":"duration"}'
 cargo run -p host-cli -- run abi-stable-greeter greet '{"name":"Rustacean"}'
 cargo run -p host-cli -- run wasm-sandboxed run-demo '{"note":"sandbox"}'
 ```
 
-Start in `docs/overview/index.md`, then follow `docs/getting-started/quickstart.md`.
+Start in `docs/overview/index.md`, then follow:
+
+- `docs/getting-started/quickstart.md`
+- `docs/plugins/native-json-catalog.md`
+- `docs/snippets/cli-recipes.md`
 
 ## License
 

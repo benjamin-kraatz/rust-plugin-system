@@ -65,17 +65,17 @@ fn run_app(
                     }
                 }
                 KeyCode::Enter => {
-                    if let Some(manifest) = manifests.get(*selected) {
-                        if let Some(action) = manifest.actions.first() {
-                            match playground.invoke_text(
-                                &manifest.id,
-                                &action.id,
-                                "{}",
-                                HostKind::Tui,
-                            ) {
-                                Ok(response) => *output = render_response(&response),
-                                Err(error) => *output = error.to_string(),
-                            }
+                    if let Some(manifest) = manifests.get(*selected)
+                        && let Some(action) = manifest.actions.first()
+                    {
+                        match playground.invoke_text(
+                            &manifest.id,
+                            &action.id,
+                            "{}",
+                            HostKind::Tui,
+                        ) {
+                            Ok(response) => *output = render_response(&response),
+                            Err(error) => *output = error.to_string(),
                         }
                     }
                 }
