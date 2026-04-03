@@ -21,7 +21,7 @@ local machine and through CI.
     - [Step 2 — dry-run preview](#step-2--dry-run-preview)
     - [Step 3 — check semver compatibility (patch and minor only)](#step-3--check-semver-compatibility-patch-and-minor-only)
     - [Step 4 — execute versioning (no publish)](#step-4--execute-versioning-no-publish)
-    - [Step 5 — publish to kellnr in dependency order](#step-5--publish-to-kellnr-in-dependency-order)
+    - [Step 5 — publish crates and upload rustdoc to kellnr](#step-5--publish-crates-and-upload-rustdoc-to-kellnr)
     - [After the release](#after-the-release)
   - [Running a release through CI](#running-a-release-through-ci)
   - [Publishing to kellnr manually (ad-hoc)](#publishing-to-kellnr-manually-ad-hoc)
@@ -190,11 +190,25 @@ LEVEL=$(./scripts/detect-release-level.sh)
 cargo release "$LEVEL" --execute --no-publish
 ```
 
-### Step 5 — publish to kellnr in dependency order
+### Step 5 — publish crates and upload rustdoc to kellnr
+
+Preview the publish/docs phase first:
+
+```bash
+scripts/publish-shared-crates.sh --dry-run
+```
+
+Then run the real publish:
 
 ```bash
 scripts/publish-shared-crates.sh
 ```
+
+That script now does two things in sequence:
+
+1. Publishes the 11 shared crates in strict dependency order.
+2. Builds workspace rustdoc once from the root `target/doc`, zips it as
+  `target/doc.zip`, and uploads it to Kellnr for each published crate version.
 
 You will be prompted to confirm each step (version bump, hook, tag, push).
 To skip all prompts:
@@ -214,6 +228,7 @@ What happens under the hood:
 6. Commit and tag are pushed to `origin`.
 7. Shared crates are published by `scripts/publish-shared-crates.sh` in
   dependency order.
+8. Rustdoc is built, zipped, and uploaded to Kellnr for each published crate.
 
 ### After the release
 
@@ -249,6 +264,7 @@ The repository ships `.github/workflows/release.yml`.  Trigger it from the
   are intentional).
 - Runs `cargo release ... --no-publish` first, then publishes via
   `scripts/publish-shared-crates.sh` to guarantee dependency order.
+- Uploads rustdoc to Kellnr after the crate versions are visible in the registry.
 - Uses `GITHUB_TOKEN` (built-in, no setup needed) for the git push and tag.
 - Uses `DZWEI_CRATES_REG_TOKEN` (repository secret) for publishing.
 

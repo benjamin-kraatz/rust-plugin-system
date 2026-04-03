@@ -200,6 +200,10 @@ jobs:
             -p host-core \
             -p plugin-test-kit
 
+      - name: Publish crates and docs (dry-run)
+        if: inputs.dry_run == true
+        run: ./scripts/publish-shared-crates.sh --dry-run
+
       - name: Release (execute)
         if: inputs.dry_run == false
         env:

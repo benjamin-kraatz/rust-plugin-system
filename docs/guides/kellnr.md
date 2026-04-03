@@ -267,6 +267,24 @@ env:
 
 ## Publishing packages
 
+This project publishes both crate archives and rustdoc documentation to
+Kellnr. After the crate versions are visible in the registry, rustdoc is built
+from the workspace root, zipped from `target/doc`, and uploaded to the Kellnr
+docs API.
+
+The raw upload shape is:
+
+```bash
+curl -H "Authorization: <TOKEN>" \
+  https://crates.d-zwei.de/api/v1/docs/<crate>/<version> \
+  --upload-file target/doc.zip
+```
+
+The same token used for crate publishing is used for docs uploads. In this
+repository, `scripts/upload-kellnr-docs.sh` performs that upload, and
+`scripts/publish-shared-crates.sh` calls it automatically after the crates have
+been published.
+
 ### Manual publish
 
 ```bash

@@ -12,6 +12,29 @@ set -euo pipefail
 DRY_RUN=false
 ALLOW_DIRTY=false
 
+if [[ -z "${CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN:-}" && -f .env ]]; then
+  env_token=$(python3 - <<'PY'
+import pathlib, re
+text = pathlib.Path('.env').read_text(encoding='utf-8')
+token = ''
+for key in ('CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN', 'DZWEI_CRATES_REG_TOKEN'):
+    m = re.search(rf'^{key}="([^"]+)"', text, re.M)
+    if m:
+        value = m.group(1)
+        if value.startswith('$'):
+            ref = value[1:]
+            ref_match = re.search(rf'^{ref}="([^"]+)"', text, re.M)
+            value = ref_match.group(1) if ref_match else ''
+        token = value
+        break
+print(token, end='')
+PY
+)
+  if [[ -n "$env_token" ]]; then
+    export CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN="$env_token"
+  fi
+fi
+
 for arg in "$@"; do
   case "$arg" in
     --dry-run)
@@ -27,9 +50,12 @@ for arg in "$@"; do
   esac
 done
 
-if [[ -z "${CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN:-}" ]]; then
-  echo "error: CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN is not set" >&2
-  exit 1
+echo
+echo "=== rustdoc upload ==="
+if [[ "$DRY_RUN" == "true" ]]; then
+  ./scripts/upload-kellnr-docs.sh --dry-run
+else
+  ./scripts/upload-kellnr-docs.sh
 fi
 
 REGISTRY="dzwei-registry"
