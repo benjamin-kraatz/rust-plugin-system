@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::{Result, anyhow};
 use plugin_loader::{LoadedPlugin, PluginCatalog, load_plugins_from_directory};
-use plugin_manifest::PluginManifest;
+use plugin_manifest::{PluginAction, PluginManifest};
 use plugin_protocol::{HostKind, InvocationContext, PluginRequest, PluginResponse};
 use plugin_runtime::{PluginSummary, render_response as render_plugin_response};
 use serde_json::Value;
@@ -103,6 +103,18 @@ pub fn render_response(response: &PluginResponse) -> String {
     render_plugin_response(response)
 }
 
+pub fn default_payload_text(action: &PluginAction) -> String {
+    action
+        .payload_hint
+        .as_deref()
+        .map(pretty_json_or_raw)
+        .unwrap_or_else(|| "{}".to_owned())
+}
+
+pub fn supports_host(manifest: &PluginManifest, host: HostKind) -> bool {
+    manifest.supported_hosts.contains(&HostKind::Any) || manifest.supported_hosts.contains(&host)
+}
+
 fn parse_payload(payload_text: &str) -> Value {
     let trimmed = payload_text.trim();
     if trimmed.is_empty() {
@@ -110,4 +122,11 @@ fn parse_payload(payload_text: &str) -> Value {
     } else {
         serde_json::from_str(trimmed).unwrap_or_else(|_| Value::String(payload_text.to_owned()))
     }
+}
+
+fn pretty_json_or_raw(input: &str) -> String {
+    serde_json::from_str::<Value>(input)
+        .ok()
+        .and_then(|value| serde_json::to_string_pretty(&value).ok())
+        .unwrap_or_else(|| input.to_owned())
 }
