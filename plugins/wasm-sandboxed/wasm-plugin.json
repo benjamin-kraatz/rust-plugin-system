@@ -2,7 +2,7 @@
   "id": "wasm-sandboxed",
   "name": "WASM Sandboxed Demo",
   "version": "0.1.0",
-  "description": "A sandboxed plugin executed through Wasmtime with a static JSON response.",
+  "description": "A sandboxed plugin executed through Wasmtime that routes multiple actions (echo, compute, validate) with real WASM logic.",
   "architecture": "wasm",
   "skill_level": "advanced",
   "supported_hosts": ["cli", "web", "service"],
@@ -15,10 +15,22 @@
   "tags": ["wasm", "sandboxed", "advanced"],
   "actions": [
     {
-      "id": "run-demo",
-      "label": "Run demo",
-      "description": "Execute the Wasmtime-hosted sandboxed plugin.",
-      "payload_hint": "{\"note\":\"sandbox me\"}"
+      "id": "echo",
+      "label": "Echo payload",
+      "description": "Echoes back the request payload with metadata from the WASM sandbox.",
+      "payload_hint": "{\"message\":\"hello from the host\"}"
+    },
+    {
+      "id": "compute",
+      "label": "Compute factorial",
+      "description": "Computes factorial(10) using iterative multiplication inside the WASM sandbox.",
+      "payload_hint": "{\"note\":\"computation demo\"}"
+    },
+    {
+      "id": "validate",
+      "label": "Validate payload",
+      "description": "Validates whether the input payload contains data or is empty/null.",
+      "payload_hint": "{\"data\":\"test\",\"count\":42}"
     }
   ],
   "compatibility": {
