@@ -51,5 +51,10 @@ sign-commit = false
 # Publish to the registry after bumping.
 publish = true
 
+# Verification fails in this workspace because [patch.dzwei-registry] path
+# overrides can produce lockfile checksum mismatches for already-published
+# versions during cargo's package verification step.
+verify = false
+
 # Allow dirty working trees only in CI (workflow checks out clean).
 allow-branch = ["main", "feat/*", "release/*"]
