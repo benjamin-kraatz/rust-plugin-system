@@ -41,42 +41,66 @@ Use the same sequence for the other reusable crates:
 - `host-core`
 - `plugin-test-kit`
 
-## Alternate path: GitHub Packages
+## Alternate path: self-hosted registry on GitHub
 
-Cargo supports publishing to an alternate registry. Configure the registry index in `.cargo/config.toml`:
+This repository ships a GitHub Actions workflow that maintains a **sparse Cargo
+registry** backed by two built-in GitHub features:
+
+| Concern | GitHub feature | URL |
+|---------|---------------|-----|
+| Index   | GitHub Pages  | `https://<owner>.github.io/<repo>/cargo/` |
+| Crates  | Releases      | one release per crate version, tagged `<crate>-<version>` |
+
+No external hosting or third-party services are required.
+
+### One-time repository setup
+
+1. In **Settings → Pages**, set *Source* to **Deploy from a branch** and select
+   the `gh-pages` branch (root folder).
+2. That is all – the first workflow run initialises the branch and the index
+   automatically.
+
+### Running the publish workflow
+
+Trigger `.github/workflows/publish-github-packages.yml` manually from the
+**Actions** tab.  The `dry_run` toggle (default `true`) lets you preview what
+would be published without uploading anything.
+
+The workflow also runs automatically whenever you publish a **GitHub Release**.
+
+### Consuming packages from this registry
+
+Add the registry to `.cargo/config.toml` in the consuming project (replace
+`<owner>` and `<repo>` with the actual values):
 
 ```toml
-[registries]
-github = { index = "sparse+https://<your-github-packages-registry-index>" }
-
-[registry]
-default = "github"
+[registries.plugin-system]
+index = "sparse+https://<owner>.github.io/<repo>/cargo/"
 ```
 
-Then authenticate and publish:
-
-```bash
-cargo login --registry github
-cargo publish --dry-run --registry github -p plugin-sdk
-cargo publish --registry github -p plugin-sdk
-```
-
-For CI, this repository includes `.github/workflows/publish-github-packages.yml`, which publishes the shared crates in dependency order with `packages: write` permissions.
-
-If you want to lock a crate to a single registry, add:
-
-```toml
-[package]
-publish = ["github"]
-```
-
-## Consuming packages from GitHub Packages
-
-In downstream projects, declare the registry on the dependency:
+Then add dependencies normally, naming the registry:
 
 ```toml
 [dependencies]
-plugin-sdk = { version = "0.1", registry = "github" }
+plugin-sdk    = { version = "0.1", registry = "plugin-system" }
+host-core     = { version = "0.1", registry = "plugin-system" }
+```
+
+Authenticate with a GitHub personal access token that has `read:packages`
+scope (or the default `GITHUB_TOKEN` in Actions workflows):
+
+```bash
+cargo login --registry plugin-system <YOUR_GITHUB_TOKEN>
+```
+
+### Restricting a crate to this registry only
+
+If you want to prevent accidental publication to crates.io, add a `publish`
+allowlist in the crate's `Cargo.toml`:
+
+```toml
+[package]
+publish = ["plugin-system"]
 ```
 
 ## Recommended release order

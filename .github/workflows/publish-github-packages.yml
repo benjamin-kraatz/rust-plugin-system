@@ -1,10 +1,27 @@
-name: Publish GitHub Packages
+# Publishes the shared Rust crates to a self-hosted sparse Cargo registry.
+#
+# The registry is served from two GitHub features:
+#   - Index:  gh-pages branch at  https://<owner>.github.io/<repo>/cargo/
+#   - Crates: GitHub Releases,    one release per crate version tagged <crate>-<version>
+#
+# One-time repository setup required before using this workflow:
+#   1. In Settings → Pages, set Source to "Deploy from a branch" and branch to "gh-pages".
+#   2. The first run of this workflow initialises the gh-pages branch automatically.
+#
+# Consumers add the following to their project's .cargo/config.toml:
+#   [registries.plugin-system]
+#   index = "sparse+https://<owner>.github.io/<repo>/cargo/"
+#
+# Then reference crates with:
+#   plugin-sdk = { version = "0.1", registry = "plugin-system" }
+
+name: Publish to Cargo Registry
 
 on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Run cargo publish in dry-run mode
+        description: "Preview only – do not upload .crate files or push the index"
         required: false
         type: boolean
         default: true
@@ -12,25 +29,25 @@ on:
     types:
       - published
 
+# contents:write is required to create releases and push to gh-pages.
 permissions:
-  contents: read
-  packages: write
+  contents: write
 
 concurrency:
-  group: publish-github-packages-${{ github.ref }}
+  group: publish-cargo-registry
   cancel-in-progress: false
 
 env:
   CARGO_TERM_COLOR: always
-  CARGO_INCREMENTAL: 0
+  CARGO_INCREMENTAL: "0"
 
 jobs:
   publish:
-    name: Publish shared crates
+    name: Package and index shared crates
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Install Rust toolchain
@@ -39,23 +56,70 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Configure Cargo registry
+      - name: Configure git identity
         run: |
-          mkdir -p "$HOME/.cargo"
-          cat > "$HOME/.cargo/config.toml" <<EOF
-          [registries.github]
-          index = "sparse+https://github.com/${{ github.repository }}/index/"
-          EOF
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
 
-      - name: Publish shared crates
+      # Clones the gh-pages branch into /tmp/pages, or creates it from scratch
+      # the first time the workflow runs.  The cargo/config.json download template
+      # uses the per-crate-per-version release tag format <crate>-<version>.
+      - name: Initialise sparse index on gh-pages
         env:
-          CARGO_REGISTRIES_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          dry_run=""
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
-            dry_run="--dry-run"
+          PAGES_DIR=/tmp/pages
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          if git ls-remote --exit-code origin refs/heads/gh-pages &>/dev/null; then
+            git clone --depth 1 --branch gh-pages "$REPO_URL" "$PAGES_DIR"
+          else
+            echo "gh-pages branch does not exist – initialising."
+            mkdir -p "$PAGES_DIR"
+            cd "$PAGES_DIR"
+            git init
+            git checkout -b gh-pages
+            git remote add origin "$REPO_URL"
           fi
+
+          mkdir -p "$PAGES_DIR/cargo"
+          CONFIG="$PAGES_DIR/cargo/config.json"
+          if [ ! -f "$CONFIG" ]; then
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO="${GITHUB_REPOSITORY##*/}"
+            cat > "$CONFIG" <<JSON
+          {"dl":"https://github.com/${GITHUB_REPOSITORY}/releases/download/{crate}-{version}/{crate}-{version}.crate","api":"https://github.com/${GITHUB_REPOSITORY}"}
+          JSON
+            cd "$PAGES_DIR"
+            git add cargo/config.json
+            git commit -m "Initialise Cargo registry index [skip ci]"
+          fi
+
+      # Packages each crate, builds the sparse index entry, uploads the .crate
+      # file as a GitHub Release asset, and appends the entry to the index.
+      # All registry reads use a single cargo-metadata snapshot for speed.
+      - name: Package and publish crates
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          DRY_RUN='${{ inputs.dry_run }}'
+          [ -z "$DRY_RUN" ] && DRY_RUN=false
+
+          PAGES_DIR=/tmp/pages
+          METADATA_FILE=$(mktemp)
+          trap 'rm -f "$METADATA_FILE"' EXIT
+          cargo metadata --no-deps --format-version 1 > "$METADATA_FILE"
+
+          # Space-separated list of all workspace package names (used to classify
+          # deps as "same registry" vs crates.io when building index entries).
+          WORKSPACE_PKGS=$(python3 - < "$METADATA_FILE" <<'PYEOF'
+          import json, sys
+          m = json.load(sys.stdin)
+          print(" ".join(p["name"] for p in m["packages"]))
+          PYEOF
+          )
 
           packages=(
             plugin-capabilities
@@ -71,7 +135,128 @@ jobs:
             plugin-test-kit
           )
 
-          for package in "${packages[@]}"; do
-            echo "Publishing ${package}"
-            cargo publish ${dry_run} --locked --registry github -p "${package}"
+          for PKG in "${packages[@]}"; do
+            echo ""
+            echo "=== ${PKG} ==="
+
+            VERSION=$(METADATA_FILE="$METADATA_FILE" PKG_NAME="$PKG" python3 - <<'PYEOF'
+          import json, sys, os
+          with open(os.environ["METADATA_FILE"]) as f:
+              m = json.load(f)
+          pkg = next(p for p in m["packages"] if p["name"] == os.environ["PKG_NAME"])
+          print(pkg["version"])
+          PYEOF
+            )
+            echo "  version : ${VERSION}"
+
+            # Compute the sparse index path for this crate name.
+            # Rules: 1 char → 1/<n>, 2 chars → 2/<n>, 3 chars → 3/<c1>/<n>,
+            #        4+ chars → <c1c2>/<c3c4>/<n>
+            NAME_LEN=${#PKG}
+            if   [ "$NAME_LEN" -eq 1 ]; then IDX_PATH="1/${PKG}"
+            elif [ "$NAME_LEN" -eq 2 ]; then IDX_PATH="2/${PKG}"
+            elif [ "$NAME_LEN" -eq 3 ]; then IDX_PATH="3/${PKG:0:1}/${PKG}"
+            else IDX_PATH="${PKG:0:2}/${PKG:2:2}/${PKG}"
+            fi
+            IDX_FILE="${PAGES_DIR}/cargo/${IDX_PATH}"
+
+            # Skip versions that are already in the index.
+            if [ -f "$IDX_FILE" ] && grep -qF "\"vers\":\"${VERSION}\"" "$IDX_FILE"; then
+              echo "  already indexed – skipping."
+              continue
+            fi
+
+            # Produce the .crate archive.
+            cargo package --locked -p "$PKG"
+            CRATE_FILE="target/package/${PKG}-${VERSION}.crate"
+            CKSUM=$(sha256sum "$CRATE_FILE" | awk '{print $1}')
+            echo "  sha256  : ${CKSUM}"
+
+            # Build the sparse index JSON entry.
+            # Dev deps are excluded (they are not needed by downstream consumers).
+            # Workspace-internal deps get registry=null (same registry).
+            # External deps (serde, anyhow, etc.) get the crates.io index URL.
+            ENTRY=$(METADATA_FILE="$METADATA_FILE" \
+                    PKG_NAME="$PKG" \
+                    PKG_VERSION="$VERSION" \
+                    PKG_CKSUM="$CKSUM" \
+                    WORKSPACE_PKGS="$WORKSPACE_PKGS" \
+                    python3 - <<'PYEOF'
+          import json, sys, os
+
+          METADATA_FILE  = os.environ["METADATA_FILE"]
+          PKG            = os.environ["PKG_NAME"]
+          VERSION        = os.environ["PKG_VERSION"]
+          CKSUM          = os.environ["PKG_CKSUM"]
+          WORKSPACE_PKGS = set(os.environ["WORKSPACE_PKGS"].split())
+          CRATES_IO      = "https://github.com/rust-lang/crates.io-index"
+
+          with open(METADATA_FILE) as f:
+              m = json.load(f)
+
+          pkg = next(p for p in m["packages"] if p["name"] == PKG)
+
+          deps = []
+          for d in pkg["dependencies"]:
+              if d.get("kind") == "dev":
+                  continue
+              deps.append({
+                  "name":             d["name"],
+                  "req":              d["req"],
+                  "features":         d.get("features", []),
+                  "optional":         d.get("optional", False),
+                  "default_features": d.get("uses_default_features", True),
+                  "target":           d.get("target"),
+                  "kind":             d.get("kind") or "normal",
+                  "registry":         None if d["name"] in WORKSPACE_PKGS else CRATES_IO,
+              })
+
+          entry = {
+              "name":     PKG,
+              "vers":     VERSION,
+              "deps":     deps,
+              "cksum":    CKSUM,
+              "features": {k: v for k, v in pkg.get("features", {}).items()},
+              "yanked":   False,
+          }
+          print(json.dumps(entry, separators=(",", ":")))
+          PYEOF
+            )
+
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "  [dry-run] index entry : ${ENTRY}"
+              echo "  [dry-run] would upload: ${CRATE_FILE}"
+            else
+              TAG="${PKG}-${VERSION}"
+              if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" &>/dev/null; then
+                gh release create "$TAG" \
+                  --repo "$GITHUB_REPOSITORY" \
+                  --title "Cargo registry: ${PKG} v${VERSION}" \
+                  --notes "Automated Cargo registry release for \`${PKG}\` v${VERSION}." \
+                  --target "$GITHUB_SHA"
+              fi
+              gh release upload "$TAG" "$CRATE_FILE" \
+                --repo "$GITHUB_REPOSITORY" \
+                --clobber
+
+              mkdir -p "$(dirname "$IDX_FILE")"
+              echo "$ENTRY" >> "$IDX_FILE"
+              echo "  indexed and uploaded."
+            fi
           done
+
+      # Push the updated index to gh-pages.  Skipped when dry_run=true or when
+      # triggered by a release event with no explicit dry_run input (treated as
+      # a live publish).
+      - name: Push sparse index to gh-pages
+        if: ${{ inputs.dry_run != 'true' }}
+        run: |
+          set -euo pipefail
+          cd /tmp/pages
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No index changes to commit."
+          else
+            git commit -m "Update Cargo registry index [skip ci]"
+            git push origin gh-pages
+          fi
