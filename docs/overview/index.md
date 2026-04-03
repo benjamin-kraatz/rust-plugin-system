@@ -23,11 +23,11 @@ The repository is intentionally broad. It does not stop at a single host app or 
 
 The current host pass is no longer just "run the same binary with a different framework." The Phase 3 hosts expose the same plugin model with noticeably different UX choices:
 
-- `host-tui` emphasizes speed, panes, and keyboard flow
+- `host-tui` emphasizes keyboard-first panes, inline payload editing, templates, and fast output review
 - `host-egui` feels like an inspector/dashboard for manifest metadata and action payloads
-- `host-iced` highlights explicit state/update structure and more deliberate application flow
-- `host-dioxus-desktop` shows a reactive component-style desktop approach
-- `host-web` focuses on browser-guided discovery, payload composition, and response cards
+- `host-iced` highlights explicit state/update flow and more deliberate application structure
+- `host-dioxus-desktop` presents a reactive desktop action studio for selection, payload editing, and invocation
+- `host-web` focuses on browser-guided discovery, payload composition, and result cards
 - `host-service` exposes the same ideas as a structured JSON API for automation
 
 Across those hosts, the shared baseline is now clearer:
@@ -41,7 +41,7 @@ Across those hosts, the shared baseline is now clearer:
 For the guided comparison, read:
 
 - `docs/hosts/host-matrix.md`
-- `docs/hosts/rich-host-surfaces.md`
+- `docs/hosts/surface-comparison.md`
 
 ## Plugin architecture tracks
 
@@ -62,5 +62,5 @@ The safest and most portable track in the repo. Great for untrusted extensions, 
 1. Read the high-level docs in `docs/`.
 2. Start with the CLI host and the simplest plugins.
 3. Use `docs/plugins/native-json-catalog.md` to walk from the foundation plugins into the expanded Phase 2 practical catalog.
-4. Compare the Phase 3 TUI, desktop, web, and service hosts with `docs/hosts/rich-host-surfaces.md`.
+4. Compare the Phase 3 TUI, desktop, web, and service hosts with `docs/hosts/surface-comparison.md`.
 5. Explore ABI-stable and WASM tracks once the basics feel natural.

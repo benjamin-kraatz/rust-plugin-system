@@ -43,14 +43,14 @@ The current implementation slice establishes:
 
 Phase 3 turns the host apps into a real comparison set instead of a binary list:
 
-- `host-tui` - keyboard-first, multi-pane browsing for terminal workflows; great when you want fast plugin/action switching without leaving the terminal
-- `host-egui` - inspector/dashboard feel with manifest metadata, action selection, payload editing, and a straightforward output panel
-- `host-iced` - explicit state/update desktop host that makes application state transitions easy to follow while comparing plugin metadata and invocation flow
-- `host-dioxus-desktop` - reactive desktop surface with plugin and action pickers, payload editing, invocation, and output panels; the crate uses an explicit `[[bin]]` target with `autobins = false`
-- `host-web` - browser-facing catalog with manifest badges, action cards, payload composition, and result cards for human-guided exploration
-- `host-service` - automation-first HTTP API with catalog, detail, examples, and invocation endpoints for scripts or backend workflows
+- `host-tui` - keyboard-first terminal host with separate plugin panes, action panes, inline payload editing, templates, and output review
+- `host-egui` - inspector/dashboard host for browsing manifest metadata, action templates, payload editing, and output panels
+- `host-iced` - explicit state/update desktop host where plugin selection, action selection, template loading, and invocation are part of the app flow
+- `host-dioxus-desktop` - reactive desktop action studio with plugin/action selection, payload editing, invocation, and output panels; the crate uses an explicit `[[bin]]` target with `autobins = false`
+- `host-web` - browser-facing catalog with manifest badges, action browser, payload composer, and result cards for human-guided comparison
+- `host-service` - automation-first HTTP API with discovery, examples, detail endpoints, and `POST /plugins/{plugin_id}/actions/{action_id}/invoke` as the canonical invoke path
 
-If you want a guided comparison, start with `docs/hosts/host-matrix.md` and `docs/hosts/rich-host-surfaces.md`.
+If you want the guided comparison, start with `docs/hosts/host-matrix.md` and `docs/hosts/surface-comparison.md`.
 
 ## Quickstart
 
@@ -79,7 +79,7 @@ Start in `docs/overview/index.md`, then follow:
 
 - `docs/getting-started/quickstart.md`
 - `docs/hosts/host-matrix.md`
-- `docs/hosts/rich-host-surfaces.md`
+- `docs/hosts/surface-comparison.md`
 - `docs/plugins/native-json-catalog.md`
 - `docs/snippets/cli-recipes.md`
 

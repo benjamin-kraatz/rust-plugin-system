@@ -15,13 +15,13 @@ Move to TUI, desktop, web, and service hosts to see how the same plugin ideas ad
 Recommended reading order:
 
 1. `docs/hosts/host-matrix.md` for the short orientation
-2. `docs/hosts/rich-host-surfaces.md` for the detailed comparison
+2. `docs/hosts/surface-comparison.md` for the detailed comparison
 3. `docs/reference/workspace-map.md` to connect the host apps back to shared crates such as `host-core`
 
 Focus on these questions while you compare:
 
 - Which host is optimized for human browsing versus automation?
-- How does each framework expose plugin selection, action selection, and payload editing?
+- How does each framework expose plugin selection, action selection, payload editing, and output review?
 - Where do manifest metadata, payload templates, and output framing feel natural or awkward?
 - What changes between browser/service surfaces and terminal/desktop surfaces?
 

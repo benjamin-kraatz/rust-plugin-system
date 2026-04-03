@@ -15,7 +15,7 @@
 ## Host apps
 
 - `host-cli` - baseline command-line inspection and invocation
-- `host-tui` - keyboard-first multi-pane terminal comparison host
+- `host-tui` - keyboard-first multi-pane terminal comparison host with inline payload editing
 - `host-egui` - inspector/dashboard desktop host
 - `host-iced` - explicit state/update desktop host
 - `host-dioxus-desktop` - reactive desktop host using an explicit Cargo `[[bin]]` target with `autobins = false`
@@ -26,7 +26,7 @@
 
 - `docs/getting-started/quickstart.md` - first-run commands
 - `docs/hosts/host-matrix.md` - short comparison table for all hosts
-- `docs/hosts/rich-host-surfaces.md` - detailed Phase 3 host comparison
+- `docs/hosts/surface-comparison.md` - detailed Phase 3 host comparison
 - `docs/plugins/native-json-catalog.md` - native plugin catalog walkthrough
 
 ## Plugin crates

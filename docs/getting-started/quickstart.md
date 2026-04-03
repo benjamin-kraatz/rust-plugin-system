@@ -54,20 +54,20 @@ For the full course-style catalog, continue with `docs/plugins/native-json-catal
 
 ## 4. Compare the rich hosts
 
-These hosts all load the same manifests and actions, but present them differently:
+These hosts all load the same manifests and actions, but expose very different UX:
 
-- `cargo run -p host-tui` - keyboard-first multi-pane terminal UI; use `Tab`, arrow keys, `Enter`, `r`, `t`, and `c` to move between plugin selection, action selection, payload editing, and output review
-- `cargo run -p host-egui` - inspector-style desktop UI for manifest metadata, action lists, payload editing, and invocation output
-- `cargo run -p host-iced` - explicit state/update desktop UI that makes selection changes, template loading, and action execution feel more application-like than dashboard-like
-- `cargo run -p host-dioxus-desktop` - reactive desktop UI with plugin/action selection, payload editing, and invocation output; the crate uses an explicit Cargo `[[bin]]` target with `autobins = false`
-- `cargo run -p host-web` - browser host at `http://127.0.0.1:4000` with a catalog, manifest details, action browser, payload composer, and result cards
-- `cargo run -p host-service` - API host at `http://127.0.0.1:5000` with JSON discovery and invocation endpoints
+- `cargo run -p host-tui` - keyboard-first terminal UI with plugin panes, action panes, inline payload editing, templates, and output review
+- `cargo run -p host-egui` - inspector/dashboard desktop UI for manifest metadata, action browsing, payload editing, and output panels
+- `cargo run -p host-iced` - explicit state/update desktop UI where selection, template loading, and invocation feel like a deliberate application workflow
+- `cargo run -p host-dioxus-desktop` - reactive desktop action studio with plugin/action selection, payload editing, invocation output, and an explicit Cargo `[[bin]]` target with `autobins = false`
+- `cargo run -p host-web` - browser host at `http://127.0.0.1:4000` with a plugin catalog, manifest details, action browser, payload composer, and result cards
+- `cargo run -p host-service` - API host at `http://127.0.0.1:5000` with automation endpoints for discovery, examples, details, and invocation
 
 ## 5. Compare web and service surfaces
 
 The two networked hosts intentionally split into human-facing and automation-facing workflows:
 
-- `host-web` is for browsing manifests, loading payload hints into a composer, and reviewing formatted result cards in the browser
+- `host-web` is for browsing manifests, loading payload hints into a composer, formatting payload JSON, and reviewing result cards in the browser
 - `host-service` is for scripts or backend flows that want stable JSON responses from:
   - `GET /`
   - `GET /health`
@@ -78,7 +78,7 @@ The two networked hosts intentionally split into human-facing and automation-fac
   - `GET /plugins/{plugin_id}/actions/{action_id}`
   - `POST /plugins/{plugin_id}/actions/{action_id}/invoke`
 
-See `docs/hosts/rich-host-surfaces.md` for the full comparison.
+See `docs/hosts/surface-comparison.md` for the full host comparison.
 
 ## 6. Explore the advanced plugin tracks
 
