@@ -6293,6 +6293,7 @@ name = "plugin-manifest"
 version = "0.1.0"
 dependencies = [
  "plugin-capabilities",
+ "plugin-test-kit",
  "serde",
  "serde_json",
 ]
@@ -6303,6 +6304,7 @@ version = "0.1.0"
 dependencies = [
  "plugin-capabilities",
  "plugin-manifest",
+ "plugin-test-kit",
  "serde",
  "serde_json",
 ]
@@ -6314,6 +6316,7 @@ dependencies = [
  "anyhow",
  "plugin-manifest",
  "plugin-protocol",
+ "plugin-test-kit",
 ]
 
 [[package]]

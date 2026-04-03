@@ -15,3 +15,4 @@ plugin-manifest = { version = "0.1.0", path = "../plugin-manifest", registry = "
 plugin-protocol = { version = "0.1.0", path = "../plugin-protocol", registry = "dzwei-registry" }
 
 [dev-dependencies]
+plugin-test-kit = { version = "0.1.0", path = "../plugin-test-kit", registry = "dzwei-registry" }
