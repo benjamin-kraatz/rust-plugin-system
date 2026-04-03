@@ -93,6 +93,7 @@ The workflow:
 ## Related docs
 
 - [`docs/guides/kellnr.md`](./kellnr.md) — registry setup, admin, consumer config
+- [`docs/guides/versioning.md`](./versioning.md) — versioning strategy, cargo-release, git-cliff, local and CI release workflows
 - [`docs/guides/external-host-plugin.md`](./external-host-plugin.md) — external project setup
 - [`docs/reference/testing-packaging.md`](../reference/testing-packaging.md)
 - [`docs/reference/version-compatibility.md`](../reference/version-compatibility.md)
