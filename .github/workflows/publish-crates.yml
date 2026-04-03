@@ -1,0 +1,131 @@
+# Publishes the shared Rust crates to the self-hosted kellnr registry at
+# https://crates.d-zwei.de.
+#
+# Prerequisites (one-time, in the GitHub repository settings):
+#   - Add a secret named DZWEI_CRATES_REG_TOKEN containing a kellnr API token
+#     with publish permission.
+#
+# Consumer setup (downstream projects):
+#   # .cargo/config.toml
+#   [registries.dzwei-registry]
+#   index = "sparse+https://crates.d-zwei.de/api/v1/crates/index/"
+#
+#   [dependencies]
+#   plugin-sdk = { version = "0.1", registry = "dzwei-registry" }
+#
+# See docs/guides/kellnr.md for full setup and usage documentation.
+
+name: Publish crates to kellnr
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only – package but do not upload"
+        required: false
+        type: boolean
+        default: true
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-crates
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  # Cargo reads this automatically for the dzwei-registry registry.
+  CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN: ${{ secrets.DZWEI_CRATES_REG_TOKEN }}
+
+jobs:
+  publish:
+    name: Publish shared crates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      # Point cargo at the kellnr sparse index.  Setting it as the default
+      # registry means that path-dep version-reqs (plugin-capabilities = "^0.1")
+      # are resolved against kellnr rather than crates.io.  This works because
+      # kellnr's crates.io caching feature proxies external crates on demand,
+      # so serde/anyhow/etc. resolve without any extra configuration.
+      - name: Configure cargo registry
+        run: |
+          mkdir -p "$HOME/.cargo"
+          cat >> "$HOME/.cargo/config.toml" <<'EOF'
+          [registry]
+          default = "dzwei-registry"
+
+          [registries.dzwei-registry]
+          index = "sparse+https://crates.d-zwei.de/api/v1/crates/index/"
+          EOF
+
+      - name: Publish crates
+        run: |
+          set -euo pipefail
+          DRY_RUN='${{ inputs.dry_run }}'
+          [ -z "$DRY_RUN" ] && DRY_RUN=false
+
+          REGISTRY_URL="https://crates.d-zwei.de"
+          METADATA_FILE=$(mktemp)
+          trap 'rm -f "$METADATA_FILE"' EXIT
+          cargo metadata --no-deps --format-version 1 > "$METADATA_FILE"
+
+          packages=(
+            plugin-capabilities
+            plugin-manifest
+            plugin-protocol
+            plugin-api
+            plugin-sdk
+            plugin-abi
+            plugin-loader
+            plugin-runtime
+            plugin-wasm
+            host-core
+            plugin-test-kit
+          )
+
+          for PKG in "${packages[@]}"; do
+            echo ""
+            echo "=== ${PKG} ==="
+
+            VERSION=$(METADATA_FILE="$METADATA_FILE" PKG_NAME="$PKG" python3 - <<'PYEOF'
+          import json, sys, os
+          with open(os.environ["METADATA_FILE"]) as f:
+              m = json.load(f)
+          pkg = next(p for p in m["packages"] if p["name"] == os.environ["PKG_NAME"])
+          print(pkg["version"])
+          PYEOF
+            )
+            echo "  version : ${VERSION}"
+
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "  [dry-run] packaging ${PKG} v${VERSION}"
+              cargo publish --dry-run --registry dzwei-registry -p "$PKG"
+              continue
+            fi
+
+            # Skip if this version is already in the registry.
+            HTTP_STATUS=$(curl -sfo /dev/null -w "%{http_code}" \
+              "${REGISTRY_URL}/api/v1/crates/${PKG}/${VERSION}")
+            if [ "$HTTP_STATUS" = "200" ]; then
+              echo "  already published – skipping."
+              continue
+            fi
+
+            cargo publish --registry dzwei-registry -p "$PKG"
+            echo "  published."
+          done

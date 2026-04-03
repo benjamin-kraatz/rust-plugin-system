@@ -1,111 +1,55 @@
 # Publishing the Shared Crates
 
-This workspace supports two publishing paths:
+The shared crates in this workspace are published to the project's self-hosted
+[kellnr](https://kellnr.io) Cargo registry at `https://crates.d-zwei.de`.
 
-1. the standard crates.io path
-2. an alternate Cargo registry backed by GitHub Packages
+See [`docs/guides/kellnr.md`](./kellnr.md) for full information on setting up
+and administrating the registry.
 
-## Before you publish
+## Consumer setup
 
-Make sure the package you are publishing has:
-
-- a version
-- a license
-- a repository URL
-- a README
-- a `publish` policy that allows the intended registry
-
-The shared crates in this workspace already include the metadata they need.
-
-## Common path: crates.io
-
-This is the default and the most common release flow.
-
-```bash
-cargo login
-cargo publish --dry-run -p plugin-sdk
-cargo publish -p plugin-sdk
-```
-
-Use the same sequence for the other reusable crates:
-
-- `plugin-capabilities`
-- `plugin-manifest`
-- `plugin-protocol`
-- `plugin-api`
-- `plugin-sdk`
-- `plugin-abi`
-- `plugin-loader`
-- `plugin-runtime`
-- `plugin-wasm`
-- `host-core`
-- `plugin-test-kit`
-
-## Alternate path: self-hosted registry on GitHub
-
-This repository ships a GitHub Actions workflow that maintains a **sparse Cargo
-registry** backed by two built-in GitHub features:
-
-| Concern | GitHub feature | URL |
-|---------|---------------|-----|
-| Index   | GitHub Pages  | `https://<owner>.github.io/<repo>/cargo/` |
-| Crates  | Releases      | one release per crate version, tagged `<crate>-<version>` |
-
-No external hosting or third-party services are required.
-
-### One-time repository setup
-
-1. In **Settings → Pages**, set *Source* to **Deploy from a branch** and select
-   the `gh-pages` branch (root folder).
-2. That is all – the first workflow run initialises the branch and the index
-   automatically.
-
-### Running the publish workflow
-
-Trigger `.github/workflows/publish-github-packages.yml` manually from the
-**Actions** tab.  The `dry_run` toggle (default `true`) lets you preview what
-would be published without uploading anything.
-
-The workflow also runs automatically whenever you publish a **GitHub Release**.
-
-### Consuming packages from this registry
-
-Add the registry to `.cargo/config.toml` in the consuming project (replace
-`<owner>` and `<repo>` with the actual values):
+Add the registry to `.cargo/config.toml` in any project that depends on these
+crates:
 
 ```toml
-[registries.plugin-system]
-index = "sparse+https://<owner>.github.io/<repo>/cargo/"
+[registries.dzwei-registry]
+index = "sparse+https://crates.d-zwei.de/api/v1/crates/index/"
 ```
 
-Then add dependencies normally, naming the registry:
+Then declare dependencies as usual, naming the registry:
 
 ```toml
 [dependencies]
-plugin-sdk    = { version = "0.1", registry = "plugin-system" }
-host-core     = { version = "0.1", registry = "plugin-system" }
+plugin-sdk    = { version = "0.1", registry = "dzwei-registry" }
+host-core     = { version = "0.1", registry = "dzwei-registry" }
 ```
 
-Authenticate with a GitHub personal access token that has `read:packages`
-scope (or the default `GITHUB_TOKEN` in Actions workflows):
+If the registry requires authentication to read (private crates), log in once
+with a read-scoped token:
 
 ```bash
-cargo login --registry plugin-system <YOUR_GITHUB_TOKEN>
+cargo login --registry dzwei-registry <YOUR_TOKEN>
 ```
 
-### Restricting a crate to this registry only
+## Publishing manually
 
-If you want to prevent accidental publication to crates.io, add a `publish`
-allowlist in the crate's `Cargo.toml`:
+You need a kellnr API token with **publish** permission.
 
-```toml
-[package]
-publish = ["plugin-system"]
+```bash
+# Authenticate (stored in ~/.cargo/credentials.toml)
+cargo login --registry dzwei-registry <YOUR_TOKEN>
+
+# Dry run — packages the crate but does not upload
+cargo publish --dry-run --registry dzwei-registry -p plugin-sdk
+
+# Publish for real
+cargo publish --registry dzwei-registry -p plugin-sdk
 ```
 
 ## Recommended release order
 
-Publish the shared contract crates first:
+Publish leaf crates first so that each subsequent crate can resolve its
+workspace-internal dependencies from the registry:
 
 1. `plugin-capabilities`
 2. `plugin-manifest`
@@ -119,16 +63,36 @@ Publish the shared contract crates first:
 10. `host-core`
 11. `plugin-test-kit`
 
-That keeps downstream host and plugin crates on the same version line.
+## Publishing via CI
+
+The repository ships `.github/workflows/publish-crates.yml`.  Trigger it
+manually from the **Actions** tab, or it runs automatically when you publish a
+GitHub Release.
+
+The `dry_run` toggle (default `true`) packages each crate and reports what
+would be uploaded without actually pushing anything.  Set it to `false` for a
+real publish.
+
+**Required GitHub secret:** `DZWEI_CRATES_REG_TOKEN` — a kellnr API token with
+publish permission.  Add it in *Settings → Secrets and variables → Actions*.
+
+The workflow:
+1. Configures `dzwei-registry` as the default Cargo registry so that
+   workspace-internal path-dep version checks resolve against kellnr rather
+   than crates.io (kellnr's crates.io caching handles external deps like serde).
+2. Publishes each crate in dependency order, skipping versions already present
+   in the registry.
 
 ## Notes
 
-- Cargo’s alternate-registry flow is documented in the Cargo book.
-- If you dual-publish, keep dependency versions aligned across registries.
 - Avoid adding workspace-only test fixtures to publishable crates.
+- If you need to pull back a broken release, yank the version from the kellnr
+  web UI rather than deleting it — yanked versions satisfy existing lock files
+  but are not chosen for new resolutions.
 
 ## Related docs
 
-- [`docs/guides/external-host-plugin.md`](./external-host-plugin.md)
+- [`docs/guides/kellnr.md`](./kellnr.md) — registry setup, admin, consumer config
+- [`docs/guides/external-host-plugin.md`](./external-host-plugin.md) — external project setup
 - [`docs/reference/testing-packaging.md`](../reference/testing-packaging.md)
 - [`docs/reference/version-compatibility.md`](../reference/version-compatibility.md)

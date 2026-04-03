@@ -127,7 +127,8 @@ Once the commands above feel natural, use these docs as the production-minded re
 If you are building outside this workspace, continue with:
 
 - `docs/guides/external-host-plugin.md` - create your own host and plugin project
-- `docs/guides/publishing.md` - publish the shared crates to crates.io or GitHub Packages
+- `docs/guides/publishing.md` - publish the shared crates to the kellnr registry
+- `docs/guides/kellnr.md` - set up, configure, and administrate the kellnr self-hosted registry
 
 A practical Phase 4 inspection loop is:
 
