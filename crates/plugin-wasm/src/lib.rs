@@ -1,3 +1,11 @@
+//! Wasm plugin loader backed by `wasmtime`.
+//!
+//! A Wasm plugin directory is expected to contain:
+//!
+//! - `wasm-plugin.json` with a serialized `PluginManifest`
+//! - `module.wasm` or `module.wat` with exported `memory`, `alloc`, and
+//!   `invoke_json`
+
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -6,6 +14,7 @@ use plugin_manifest::PluginManifest;
 use plugin_protocol::{PluginRequest, PluginResponse};
 use wasmtime::{Engine, Instance, Module, Store};
 
+/// A loaded Wasm plugin descriptor.
 #[derive(Debug, Clone)]
 pub struct LoadedWasmPlugin {
     manifest: PluginManifest,
@@ -13,14 +22,22 @@ pub struct LoadedWasmPlugin {
 }
 
 impl LoadedWasmPlugin {
+    /// Returns the parsed plugin manifest.
     pub fn manifest(&self) -> &PluginManifest {
         &self.manifest
     }
 
+    /// Returns the path to the Wasm or WAT module file.
     pub fn module_path(&self) -> &Path {
         &self.module_path
     }
 
+    /// Instantiates the module and invokes `invoke_json` with a request payload.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when module exports are missing, memory operations fail,
+    /// or response JSON is invalid.
     pub fn invoke(&self, request: &PluginRequest) -> Result<PluginResponse> {
         let engine = Engine::default();
         let module = load_module(&engine, &self.module_path)?;
@@ -63,11 +80,21 @@ impl LoadedWasmPlugin {
     }
 }
 
+/// Result of scanning and loading Wasm plugin directories.
 pub struct WasmPluginCatalog {
+    /// Successfully loaded Wasm plugins.
     pub plugins: Vec<LoadedWasmPlugin>,
+    /// Non-fatal loading failures keyed by plugin directory.
     pub warnings: Vec<String>,
 }
 
+/// Loads all Wasm plugins from `root/plugins`.
+///
+/// Subdirectories without a `wasm-plugin.json` file are ignored.
+///
+/// # Errors
+///
+/// Returns an error if the workspace plugin directory cannot be read.
 pub fn load_plugins_from_workspace(root: &Path) -> Result<WasmPluginCatalog> {
     let plugins_dir = root.join("plugins");
     let mut plugins = Vec::new();
@@ -101,6 +128,26 @@ pub fn load_plugins_from_workspace(root: &Path) -> Result<WasmPluginCatalog> {
     Ok(WasmPluginCatalog { plugins, warnings })
 }
 
+/// Loads one Wasm plugin from a directory.
+///
+/// The directory must include `wasm-plugin.json` and either `module.wasm` or
+/// `module.wat`.
+///
+/// # Errors
+///
+/// Returns an error when manifest or module files are missing, unreadable, or
+/// malformed.
+///
+/// # Examples
+///
+/// ```no_run
+/// use plugin_wasm::load_plugin_from_dir;
+/// use std::path::Path;
+///
+/// let plugin = load_plugin_from_dir(Path::new("plugins/my-wasm-plugin"))?;
+/// println!("loaded {}", plugin.manifest().id);
+/// # Ok::<(), anyhow::Error>(())
+/// ```
 pub fn load_plugin_from_dir(directory: &Path) -> Result<LoadedWasmPlugin> {
     let manifest_path = directory.join("wasm-plugin.json");
     let manifest_json = fs::read_to_string(&manifest_path)

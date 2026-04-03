@@ -1,3 +1,11 @@
+//! Native dynamic-library plugin loader.
+//!
+//! This loader discovers and opens native JSON plugins that expose the three
+//! well-known ABI symbols from `plugin-api`.
+//!
+//! Use this crate for the NativeJson architecture. ABI-stable plugins are loaded
+//! by `plugin-abi`.
+
 use std::ffi::{CString, c_char};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -13,6 +21,7 @@ type ManifestFn = unsafe extern "C" fn() -> *mut c_char;
 type InvokeFn = unsafe extern "C" fn(*const c_char) -> *mut c_char;
 type FreeFn = unsafe extern "C" fn(*mut c_char);
 
+/// A loaded native plugin together with resolved symbol pointers.
 pub struct LoadedPlugin {
     _library: Library,
     manifest: PluginManifest,
@@ -22,14 +31,22 @@ pub struct LoadedPlugin {
 }
 
 impl LoadedPlugin {
+    /// Returns the plugin manifest loaded from the plugin binary.
     pub fn manifest(&self) -> &PluginManifest {
         &self.manifest
     }
 
+    /// Returns the dynamic library path this plugin was loaded from.
     pub fn path(&self) -> &Path {
         &self.path
     }
 
+    /// Invokes the plugin with a structured request.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when request serialization fails, the plugin returns an
+    /// invalid pointer, or the response JSON cannot be parsed.
     pub fn invoke(&self, request: &PluginRequest) -> Result<plugin_protocol::PluginResponse> {
         let request_json = serde_json::to_string(request)?;
         let request_c_string = CString::new(request_json)
@@ -57,6 +74,7 @@ impl LoadedPlugin {
         Ok(response)
     }
 
+    /// Invokes the plugin and renders its response to plain text.
     pub fn invoke_and_render(&self, request: &PluginRequest) -> Result<String> {
         self.invoke(request)
             .map(|response| render_response(&response))
@@ -110,11 +128,33 @@ impl LoadedPlugin {
     }
 }
 
+/// Result of scanning and loading a plugin directory.
 pub struct PluginCatalog {
+    /// Successfully loaded plugins.
     pub plugins: Vec<LoadedPlugin>,
+    /// Non-fatal loading failures keyed by candidate path.
     pub warnings: Vec<String>,
 }
 
+/// Loads all native plugin candidates from a directory.
+///
+/// Candidate files are platform dynamic libraries with a `lib` prefix. Files
+/// containing `abi_stable` in the file name are skipped.
+///
+/// # Errors
+///
+/// Returns an error if the directory cannot be read.
+///
+/// # Examples
+///
+/// ```no_run
+/// use plugin_loader::load_plugins_from_directory;
+/// use std::path::Path;
+///
+/// let catalog = load_plugins_from_directory(Path::new("target/debug"))?;
+/// println!("loaded {} plugin(s)", catalog.plugins.len());
+/// # Ok::<(), anyhow::Error>(())
+/// ```
 pub fn load_plugins_from_directory(directory: &Path) -> Result<PluginCatalog> {
     let mut candidates = fs::read_dir(directory)
         .with_context(|| format!("failed to read plugin directory '{}'", directory.display()))?

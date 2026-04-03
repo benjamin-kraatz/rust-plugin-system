@@ -1,16 +1,31 @@
+//! Shared host-side runtime helpers.
+//!
+//! This crate provides two core utilities:
+//!
+//! - [`PluginSummary`] for lightweight manifest presentation
+//! - [`render_response`] for readable text rendering of protocol responses
+
 use plugin_manifest::PluginManifest;
 use plugin_protocol::{OutputBlock, PluginResponse};
 
+/// Lightweight host-facing plugin metadata derived from a full manifest.
 #[derive(Debug, Clone)]
 pub struct PluginSummary {
+    /// Unique plugin identifier.
     pub id: String,
+    /// Human-readable plugin name.
     pub name: String,
+    /// Short plugin description.
     pub description: String,
+    /// Number of declared actions.
     pub action_count: usize,
+    /// Host labels converted from manifest host kinds.
     pub supported_hosts: Vec<String>,
+    /// Tag set from the manifest.
     pub tags: Vec<String>,
 }
 
+/// Converts a full manifest to a presentation summary.
 impl From<&PluginManifest> for PluginSummary {
     fn from(manifest: &PluginManifest) -> Self {
         Self {
@@ -28,6 +43,22 @@ impl From<&PluginManifest> for PluginSummary {
     }
 }
 
+/// Renders a protocol response to a readable plain-text report.
+///
+/// The output includes title and summary, optional output blocks, next steps,
+/// execution metadata, and capability negotiation details.
+///
+/// # Examples
+///
+/// ```
+/// use plugin_protocol::PluginResponse;
+/// use plugin_runtime::render_response;
+///
+/// let response = PluginResponse::ok("demo", "run", "Done", "Execution finished");
+/// let text = render_response(&response);
+/// assert!(text.contains("Done"));
+/// assert!(text.contains("Execution finished"));
+/// ```
 pub fn render_response(response: &PluginResponse) -> String {
     let mut rendered = String::new();
     rendered.push_str(&format!("{}\n{}\n", response.title, response.summary));
