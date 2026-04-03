@@ -56,6 +56,102 @@ jobs:
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
 
+      # cargo package checks the registry to confirm that path-dep versions exist
+      # before creating the archive.  Our crates are not on crates.io, so that
+      # check fails for every crate that depends on another workspace crate.
+      #
+      # Fix: run a tiny HTTP proxy that replaces crates.io during this job.
+      #   - Requests for our workspace crates → minimal synthetic index entry.
+      #   - Everything else → transparently proxied to index.crates.io.
+      # cargo is configured to use the proxy via [source.crates-io] replacement.
+      - name: Start local registry proxy
+        run: |
+          python3 - <<'PYEOF'
+          import json, threading, urllib.request
+          from http.server import HTTPServer, BaseHTTPRequestHandler
+
+          WORKSPACE = {
+              "plugin-capabilities", "plugin-manifest", "plugin-protocol",
+              "plugin-api", "plugin-sdk", "plugin-abi", "plugin-loader",
+              "plugin-runtime", "plugin-wasm", "host-core", "plugin-test-kit",
+          }
+          VERSION = "0.1.0"
+
+          def idx_path(name):
+              n = len(name)
+              if n == 1: return f"1/{name}"
+              if n == 2: return f"2/{name}"
+              if n == 3: return f"3/{name[0]}/{name}"
+              return f"{name[:2]}/{name[2:4]}/{name}"
+
+          def synthetic_entry(name):
+              return json.dumps({
+                  "name": name, "vers": VERSION,
+                  "deps": [], "cksum": "0" * 64,
+                  "features": {}, "yanked": False,
+              }).encode()
+
+          WORKSPACE_PATHS = {idx_path(n): n for n in WORKSPACE}
+
+          class Handler(BaseHTTPRequestHandler):
+              def do_GET(self):
+                  path = self.path.lstrip("/")
+                  if path == "config.json":
+                      body = b'{"dl":"http://localhost:9645/dl/{crate}/{version}/download"}'
+                      self.reply(200, body)
+                      return
+                  if path in WORKSPACE_PATHS:
+                      self.reply(200, synthetic_entry(WORKSPACE_PATHS[path]))
+                      return
+                  try:
+                      url = f"https://index.crates.io/{path}"
+                      req = urllib.request.Request(url, headers={"User-Agent": "cargo"})
+                      with urllib.request.urlopen(req, timeout=30) as r:
+                          body = r.read()
+                      self.reply(200, body)
+                  except Exception:
+                      self.reply(404, b"")
+
+              def reply(self, code, body):
+                  self.send_response(code)
+                  self.send_header("Content-Length", str(len(body)))
+                  self.end_headers()
+                  self.wfile.write(body)
+
+              def log_message(self, *_):
+                  pass
+
+          server = HTTPServer(("127.0.0.1", 9645), Handler)
+          t = threading.Thread(target=server.serve_forever, daemon=True)
+          t.start()
+          # Keep the process alive so the daemon thread stays up.
+          import time, signal, sys
+          signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+          while True:
+              time.sleep(3600)
+          PYEOF
+          &
+          echo $! > /tmp/cargo-proxy.pid
+
+          # Wait until the proxy is accepting connections.
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:9645/config.json > /dev/null 2>&1; then
+              echo "Proxy is ready."
+              break
+            fi
+            sleep 1
+          done
+
+          # Redirect cargo's crates.io source to the local proxy.
+          mkdir -p "$HOME/.cargo"
+          cat >> "$HOME/.cargo/config.toml" <<'EOF'
+          [source.crates-io]
+          replace-with = "local-proxy"
+
+          [source.local-proxy]
+          registry = "sparse+http://localhost:9645/"
+          EOF
+
       - name: Configure git identity
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
