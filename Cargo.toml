@@ -1,0 +1,54 @@
+[workspace]
+members = [
+    "crates/plugin-api",
+    "crates/plugin-capabilities",
+    "crates/plugin-manifest",
+    "crates/plugin-protocol",
+    "crates/plugin-runtime",
+    "crates/plugin-loader",
+    "crates/plugin-sdk",
+    "crates/plugin-test-kit",
+    "crates/plugin-abi",
+    "crates/plugin-wasm",
+    "crates/host-core",
+    "hosts/host-cli",
+    "hosts/host-egui",
+    "hosts/host-iced",
+    "hosts/host-dioxus-desktop",
+    "hosts/host-tui",
+    "hosts/host-web",
+    "hosts/host-service",
+    "plugins/hello-world",
+    "plugins/logger",
+    "plugins/formatter",
+    "plugins/transformer",
+    "plugins/command-pack",
+    "plugins/ui-panel",
+    "plugins/filesystem-tools",
+    "plugins/data-pipeline",
+    "plugins/config-provider",
+    "plugins/metrics-observer",
+    "plugins/wasm-sandboxed",
+    "plugins/abi-stable-greeter",
+    "plugins/abi-stable-command-pack",
+    "plugins/web-widget",
+    "plugins/tui-tools",
+    "plugins/service-hooks",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/example/rust-plugin-system"
+rust-version = "1.94"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unwrap_used = "deny"
+

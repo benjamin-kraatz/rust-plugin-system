@@ -1,0 +1,8 @@
+[package]
+name = "plugin-manifest"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+plugin-capabilities = { version = "0.1.0", path = "../plugin-capabilities" }
+serde = { version = "1.0.228", features = ["derive"] }

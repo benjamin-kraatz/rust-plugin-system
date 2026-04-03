@@ -1,0 +1,11 @@
+[package]
+name = "logger"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+plugin-sdk = { version = "0.1.0", path = "../../crates/plugin-sdk" }
+serde_json = "1.0.149"

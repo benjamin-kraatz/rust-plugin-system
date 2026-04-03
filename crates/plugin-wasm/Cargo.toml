@@ -1,0 +1,10 @@
+[package]
+name = "plugin-wasm"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.102"
+plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }
+plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
+wasmtime = "43.0.0"

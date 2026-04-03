@@ -1,0 +1,10 @@
+[package]
+name = "plugin-sdk"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+plugin-api = { version = "0.1.0", path = "../plugin-api" }
+plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }
+plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
+serde_json = "1.0.149"

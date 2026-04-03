@@ -1,0 +1,12 @@
+[package]
+name = "host-core"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.102"
+plugin-loader = { version = "0.1.0", path = "../plugin-loader" }
+plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }
+plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
+plugin-runtime = { version = "0.1.0", path = "../plugin-runtime" }
+serde_json = "1.0.149"
