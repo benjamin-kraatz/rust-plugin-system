@@ -41,6 +41,8 @@ The first implementation slice establishes:
 cargo build --workspace
 cargo run -p host-cli -- list
 cargo run -p host-cli -- run hello-world greet '{"name":"Rustacean"}'
+cargo run -p host-cli -- run abi-stable-greeter greet '{"name":"Rustacean"}'
+cargo run -p host-cli -- run wasm-sandboxed run-demo '{"note":"sandbox"}'
 ```
 
 Start in `docs/overview/index.md`, then follow `docs/getting-started/quickstart.md`.

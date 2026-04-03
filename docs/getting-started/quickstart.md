@@ -37,7 +37,24 @@ cargo run -p host-cli -- run formatter pretty-json '{"project":"rust-plugin-syst
 - `cargo run -p host-web`
 - `cargo run -p host-service`
 
-## 4. Understand what you are seeing
+## 4. Explore the advanced plugin tracks
+
+Try the ABI-stable plugin examples:
+
+```bash
+cargo run -p host-cli -- inspect abi-stable-greeter
+cargo run -p host-cli -- run abi-stable-greeter greet '{"name":"Rustacean"}'
+```
+
+Try the sandboxed WASM plugin examples:
+
+```bash
+cargo run -p host-cli -- inspect wasm-sandboxed
+cargo run -p host-cli -- run wasm-sandboxed run-demo '{"note":"sandbox"}'
+cargo run -p host-cli -- run web-widget render-widget '{"theme":"dark"}'
+```
+
+## 5. Understand what you are seeing
 
 The first working slice uses **native dynamic libraries** with a **JSON-over-FFI** boundary:
 
@@ -48,3 +65,7 @@ The first working slice uses **native dynamic libraries** with a **JSON-over-FFI
 
 This keeps the ABI small and explicit while still demonstrating real runtime loading.
 
+The repository also includes:
+
+- **ABI-stable native plugins** loaded with `abi_stable`
+- **sandboxed WASM plugins** executed with Wasmtime

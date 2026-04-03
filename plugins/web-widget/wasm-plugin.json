@@ -1,0 +1,27 @@
+{
+  "id": "web-widget",
+  "name": "WASM Web Widget",
+  "version": "0.1.0",
+  "description": "A second sandboxed WASM plugin that returns widget-oriented output.",
+  "architecture": "wasm",
+  "skill_level": "advanced",
+  "supported_hosts": ["cli", "web"],
+  "capabilities": [
+    {
+      "key": "widget-markup",
+      "description": "Returns markdown-like widget content from a sandboxed module."
+    }
+  ],
+  "tags": ["wasm", "web", "widget"],
+  "actions": [
+    {
+      "id": "render-widget",
+      "label": "Render widget",
+      "description": "Return a widget-oriented response from a sandboxed module.",
+      "payload_hint": "{\"theme\":\"dark\"}"
+    }
+  ],
+  "notes": [
+    "This complements the generic wasm-sandboxed example with a more UI-flavored response."
+  ]
+}

@@ -141,6 +141,10 @@ fn is_dynamic_library(path: &Path) -> bool {
         return false;
     };
 
+    if file_name.contains("abi_stable") {
+        return false;
+    }
+
     let extension_matches = if cfg!(target_os = "macos") {
         path.extension().and_then(|value| value.to_str()) == Some("dylib")
     } else if cfg!(target_os = "windows") {

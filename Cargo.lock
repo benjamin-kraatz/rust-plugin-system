@@ -21,10 +21,24 @@ checksum = "366ffbaa4442f4684d91e2cd7c5ea7c4ed8add41959a31447066e279e432b618"
 [[package]]
 name = "abi-stable-command-pack"
 version = "0.1.0"
+dependencies = [
+ "abi_stable",
+ "plugin-abi",
+ "plugin-manifest",
+ "plugin-protocol",
+ "serde_json",
+]
 
 [[package]]
 name = "abi-stable-greeter"
 version = "0.1.0"
+dependencies = [
+ "abi_stable",
+ "plugin-abi",
+ "plugin-manifest",
+ "plugin-protocol",
+ "serde_json",
+]
 
 [[package]]
 name = "abi_stable"
@@ -3675,7 +3689,11 @@ dependencies = [
  "anyhow",
  "clap",
  "host-core",
+ "plugin-abi",
+ "plugin-manifest",
  "plugin-protocol",
+ "plugin-wasm",
+ "serde_json",
 ]
 
 [[package]]
@@ -6064,8 +6082,10 @@ name = "plugin-abi"
 version = "0.1.0"
 dependencies = [
  "abi_stable",
+ "anyhow",
  "plugin-manifest",
  "plugin-protocol",
+ "serde_json",
 ]
 
 [[package]]
@@ -6145,7 +6165,9 @@ dependencies = [
  "anyhow",
  "plugin-manifest",
  "plugin-protocol",
+ "serde_json",
  "wasmtime",
+ "wat",
 ]
 
 [[package]]

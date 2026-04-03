@@ -24,5 +24,26 @@ This track is for:
 
 ## Current status
 
-The repository currently has the full workspace structure and the working native JSON path in place. ABI-stable and WASM tracks are scaffolded next so the repo can grow without a structural rewrite.
+The repository now has all three tracks represented in working form:
 
+- **Native JSON dylib track** through the shared `plugin-loader`
+- **ABI-stable dylib track** through `crates/plugin-abi` and the `abi-stable-*` plugins
+- **WASM sandboxed track** through `crates/plugin-wasm` and WAT-backed modules executed by Wasmtime
+
+The next layer of work is expanding these from minimal runnable examples into richer, more production-shaped ecosystems.
+
+## Current commands
+
+```bash
+cargo run -p host-cli -- run abi-stable-greeter greet '{"name":"Rustacean"}'
+cargo run -p host-cli -- run abi-stable-command-pack suggest '{}'
+cargo run -p host-cli -- run wasm-sandboxed run-demo '{"note":"sandbox"}'
+cargo run -p host-cli -- run web-widget render-widget '{"theme":"dark"}'
+```
+
+## Expansion ideas
+
+- Rust-authored `wasm32` plugins to complement the visible WAT modules
+- richer ABI-stable module evolution examples across versions
+- host-specific rendering layers for advanced track plugins in GUI/web/service hosts
+- packaging and distribution flows for each plugin architecture

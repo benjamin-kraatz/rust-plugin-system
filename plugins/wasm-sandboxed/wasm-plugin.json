@@ -1,0 +1,28 @@
+{
+  "id": "wasm-sandboxed",
+  "name": "WASM Sandboxed Demo",
+  "version": "0.1.0",
+  "description": "A sandboxed plugin executed through Wasmtime with a static JSON response.",
+  "architecture": "wasm",
+  "skill_level": "advanced",
+  "supported_hosts": ["cli", "web", "service"],
+  "capabilities": [
+    {
+      "key": "sandboxed-response",
+      "description": "Returns a response from a sandboxed WebAssembly module."
+    }
+  ],
+  "tags": ["wasm", "sandboxed", "advanced"],
+  "actions": [
+    {
+      "id": "run-demo",
+      "label": "Run demo",
+      "description": "Execute the Wasmtime-hosted sandboxed plugin.",
+      "payload_hint": "{\"note\":\"sandbox me\"}"
+    }
+  ],
+  "notes": [
+    "This module is authored as WAT to keep the runtime mechanics visible.",
+    "A future track can replace it with Rust-authored wasm32 plugins."
+  ]
+}

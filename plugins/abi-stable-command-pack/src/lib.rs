@@ -1,14 +1,59 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+use abi_stable::{export_root_module, prefix_type::PrefixTypeTrait, std_types::RString};
+use plugin_abi::{AbiPluginModule, AbiPluginModuleRef};
+use plugin_manifest::{
+    Capability, HostKind, PluginAction, PluginArchitecture, PluginManifest, SkillLevel,
+};
+use plugin_protocol::{OutputKind, PluginResponse};
+
+fn manifest() -> PluginManifest {
+    PluginManifest::new(
+        "abi-stable-command-pack",
+        "ABI-Stable Command Pack",
+        "0.1.0",
+        "Shows abi_stable plugins returning curated command guidance for plugin development.",
+        PluginArchitecture::AbiStable,
+        SkillLevel::Advanced,
+    )
+    .with_supported_hosts(vec![HostKind::Cli, HostKind::Service])
+    .with_capabilities(vec![Capability::new(
+        "abi-stable-commands",
+        "Returns command recommendations from an ABI-stable plugin.",
+    )])
+    .with_tags(["abi-stable", "commands", "advanced"])
+    .with_actions(vec![PluginAction::new(
+        "suggest",
+        "Suggest commands",
+        "Return commands for exploring advanced plugin tracks.",
+    )])
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+extern "C" fn manifest_json() -> RString {
+    RString::from(
+        serde_json::to_string(&manifest()).expect("manifest serialization should succeed"),
+    )
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+extern "C" fn invoke_json(_request_json: RString) -> RString {
+    let response = PluginResponse::ok(
+        "abi-stable-command-pack",
+        "suggest",
+        "ABI-stable command pack",
+        "Generated commands for exploring ABI-stable and WASM tracks.",
+    )
+    .with_output(
+        OutputKind::Code,
+        "Commands",
+        "cargo build -p abi-stable-greeter -p abi-stable-command-pack\ncargo run -p host-cli -- list\ncargo run -p host-cli -- inspect abi-stable-greeter\ncargo run -p host-cli -- run abi-stable-command-pack suggest '{}'",
+    );
+
+    RString::from(serde_json::to_string(&response).expect("response serialization should succeed"))
+}
+
+#[export_root_module]
+pub fn instantiate_root_module() -> AbiPluginModuleRef {
+    AbiPluginModule {
+        manifest_json,
+        invoke_json,
     }
+    .leak_into_prefix()
 }
