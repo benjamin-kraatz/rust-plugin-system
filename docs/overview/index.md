@@ -16,8 +16,32 @@ The repository is intentionally broad. It does not stop at a single host app or 
 - **CLI** for direct command execution and scripting workflows
 - **TUI** for terminal dashboards and keyboard-first workflows
 - **Desktop GUI** for plugin-driven panels, inspectors, and actions
-- **Web-facing host** for browser-friendly or remotely mediated plugin experiences
+- **Web-facing host** for browser-friendly plugin discovery and payload composition
 - **Service host** for backend hooks, transforms, and automation use cases
+
+## Phase 3: rich host comparison
+
+The current host pass is no longer just "run the same binary with a different framework." The Phase 3 hosts expose the same plugin model with noticeably different UX choices:
+
+- `host-tui` emphasizes speed, panes, and keyboard flow
+- `host-egui` feels like an inspector/dashboard for manifest metadata and action payloads
+- `host-iced` highlights explicit state/update structure and more deliberate application flow
+- `host-dioxus-desktop` shows a reactive component-style desktop approach
+- `host-web` focuses on browser-guided discovery, payload composition, and response cards
+- `host-service` exposes the same ideas as a structured JSON API for automation
+
+Across those hosts, the shared baseline is now clearer:
+
+- plugin selection and action selection
+- payload hints loaded through `host-core::default_payload_text()`
+- host-fit checks via `host-core::supports_host()`
+- manifest metadata such as tags, capabilities, notes, supported hosts, architecture, and skill level
+- output/result framing that helps compare the same action across terminal, desktop, browser, and service surfaces
+
+For the guided comparison, read:
+
+- `docs/hosts/host-matrix.md`
+- `docs/hosts/rich-host-surfaces.md`
 
 ## Plugin architecture tracks
 
@@ -38,5 +62,5 @@ The safest and most portable track in the repo. Great for untrusted extensions, 
 1. Read the high-level docs in `docs/`.
 2. Start with the CLI host and the simplest plugins.
 3. Use `docs/plugins/native-json-catalog.md` to walk from the foundation plugins into the expanded Phase 2 practical catalog.
-4. Compare the same plugin concepts in TUI and GUI hosts.
+4. Compare the Phase 3 TUI, desktop, web, and service hosts with `docs/hosts/rich-host-surfaces.md`.
 5. Explore ABI-stable and WASM tracks once the basics feel natural.
