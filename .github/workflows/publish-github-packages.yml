@@ -167,8 +167,10 @@ jobs:
               continue
             fi
 
-            # Produce the .crate archive.
-            cargo package --locked -p "$PKG"
+            # Produce the .crate archive.  --no-verify skips the isolation build
+            # that would fail because sibling workspace crates are not yet in any
+            # registry at this point; the workspace already compiles cleanly.
+            cargo package --locked --no-verify -p "$PKG"
             CRATE_FILE="target/package/${PKG}-${VERSION}.crate"
             CKSUM=$(sha256sum "$CRATE_FILE" | awk '{print $1}')
             echo "  sha256  : ${CKSUM}"
