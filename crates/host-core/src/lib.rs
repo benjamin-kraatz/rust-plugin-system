@@ -1,3 +1,8 @@
+//! Host-side orchestration entry point for the plugin system.
+//!
+//! [`Playground`] is the main API for loading native plugins and invoking their
+//! actions with host-aware runtime context.
+
 use std::{
     path::{Path, PathBuf},
     time::Instant,
@@ -14,6 +19,7 @@ use plugin_runtime::{PluginSummary, render_response as render_plugin_response};
 use semver::Version;
 use serde_json::Value;
 
+/// Host runtime facade for loading and invoking plugins.
 pub struct Playground {
     plugins: Vec<LoadedPlugin>,
     warnings: Vec<String>,
@@ -21,10 +27,33 @@ pub struct Playground {
 }
 
 impl Playground {
+    /// Loads plugins from the default plugin directory.
+    ///
+    /// The default can be overridden with the
+    /// `RUST_PLUGIN_SYSTEM_PLUGIN_DIR` environment variable.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the plugin directory cannot be scanned.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use host_core::Playground;
+    ///
+    /// let host = Playground::load_default()?;
+    /// println!("loaded {} plugin(s)", host.manifests().len());
+    /// # Ok::<(), anyhow::Error>(())
+    /// ```
     pub fn load_default() -> Result<Self> {
         Self::load(default_plugin_dir())
     }
 
+    /// Loads plugins from a specific directory.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when directory scanning fails.
     pub fn load(plugin_dir: impl AsRef<Path>) -> Result<Self> {
         let plugin_dir = plugin_dir.as_ref().to_path_buf();
         let PluginCatalog { plugins, warnings } = load_plugins_from_directory(&plugin_dir)?;
@@ -36,14 +65,17 @@ impl Playground {
         })
     }
 
+    /// Returns the plugin directory used by this host instance.
     pub fn plugin_dir(&self) -> &Path {
         &self.plugin_dir
     }
 
+    /// Returns non-fatal plugin loading warnings.
     pub fn warnings(&self) -> &[String] {
         &self.warnings
     }
 
+    /// Returns cloned manifests for all loaded plugins.
     pub fn manifests(&self) -> Vec<PluginManifest> {
         self.plugins
             .iter()
@@ -51,6 +83,7 @@ impl Playground {
             .collect()
     }
 
+    /// Returns presentation summaries for loaded plugins.
     pub fn summaries(&self) -> Vec<PluginSummary> {
         self.plugins
             .iter()
@@ -58,6 +91,14 @@ impl Playground {
             .collect()
     }
 
+    /// Invokes one plugin action with textual payload input.
+    ///
+    /// If `payload_text` is valid JSON it is parsed as JSON, otherwise it is
+    /// passed as a string payload.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when plugin/action lookup fails or invocation fails.
     pub fn invoke_text(
         &self,
         plugin_id: &str,
@@ -69,6 +110,11 @@ impl Playground {
         self.invoke(plugin_id, action_id, payload, host)
     }
 
+    /// Invokes one plugin action with a structured JSON payload.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when plugin lookup fails or invocation fails.
     pub fn invoke(
         &self,
         plugin_id: &str,
@@ -132,16 +178,24 @@ impl Playground {
     }
 }
 
+/// Resolves the default plugin directory.
+///
+/// Uses `RUST_PLUGIN_SYSTEM_PLUGIN_DIR` when present, otherwise `target/debug`.
 pub fn default_plugin_dir() -> PathBuf {
     std::env::var_os("RUST_PLUGIN_SYSTEM_PLUGIN_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("target/debug"))
 }
 
+/// Renders a plugin response into plain text for terminal/UI display.
 pub fn render_response(response: &PluginResponse) -> String {
     render_plugin_response(response)
 }
 
+/// Returns a default textual payload for an action.
+///
+/// If the action includes a JSON payload hint, it is pretty-printed when
+/// possible.
 pub fn default_payload_text(action: &PluginAction) -> String {
     action
         .payload_hint
@@ -150,10 +204,12 @@ pub fn default_payload_text(action: &PluginAction) -> String {
         .unwrap_or_else(|| "{}".to_owned())
 }
 
+/// Returns whether a manifest declares support for `host`.
 pub fn supports_host(manifest: &PluginManifest, host: HostKind) -> bool {
     manifest.supported_hosts.contains(&HostKind::Any) || manifest.supported_hosts.contains(&host)
 }
 
+/// Builds an invocation context suitable for host-driven plugin invocation.
 pub fn build_invocation_context(
     host: HostKind,
     workspace_root: Option<&Path>,
@@ -176,6 +232,7 @@ pub fn build_invocation_context(
     }
 }
 
+/// Builds default runtime context for a given host kind.
 pub fn default_runtime_context(host: HostKind, host_version: Option<&str>) -> RuntimeContext {
     RuntimeContext {
         host_version: host_version.map(str::to_owned),
@@ -187,6 +244,10 @@ pub fn default_runtime_context(host: HostKind, host_version: Option<&str>) -> Ru
     }
 }
 
+/// Finalizes a plugin response with host-derived metadata.
+///
+/// This function fills negotiation results, request identifiers, inherited
+/// warnings, and default execution metadata when missing.
 pub fn finalize_response(
     manifest: &PluginManifest,
     request: &PluginRequest,
@@ -218,6 +279,10 @@ pub fn finalize_response(
     response
 }
 
+/// Assesses whether a plugin manifest is fit for a given host context.
+///
+/// The result combines host-kind support, version compatibility, and capability
+/// negotiation.
 pub fn assess_host_fit(
     manifest: &PluginManifest,
     context: &InvocationContext,
@@ -270,21 +335,31 @@ pub fn assess_host_fit(
     }
 }
 
+/// Coarse host fit classification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HostFitStatus {
+    /// Host and runtime context satisfy plugin requirements.
     Ready,
+    /// Invocation can proceed but with degraded behavior.
     Degraded,
+    /// Invocation should be rejected.
     Rejected,
 }
 
+/// Detailed host-fit assessment result.
 #[derive(Debug, Clone)]
 pub struct HostFitAssessment {
+    /// Top-level fit status.
     pub status: HostFitStatus,
+    /// Human-readable summary.
     pub summary: String,
+    /// Optional version compatibility summary.
     pub version_summary: Option<String>,
+    /// Capability negotiation outcome.
     pub negotiation: NegotiationOutcome,
 }
 
+/// Summarizes high-level manifest metadata into readable lines.
 pub fn summarize_manifest_metadata(manifest: &PluginManifest) -> Vec<String> {
     let mut lines = Vec::new();
 
@@ -366,6 +441,7 @@ pub fn summarize_manifest_metadata(manifest: &PluginManifest) -> Vec<String> {
     lines
 }
 
+/// Summarizes action metadata into readable lines.
 pub fn summarize_action_metadata(action: &PluginAction) -> Vec<String> {
     let mut lines = Vec::new();
 
@@ -428,6 +504,7 @@ pub fn summarize_action_metadata(action: &PluginAction) -> Vec<String> {
     lines
 }
 
+/// Summarizes response metadata into readable lines.
 pub fn summarize_response_metadata(response: &PluginResponse) -> Vec<String> {
     let mut lines = Vec::new();
 

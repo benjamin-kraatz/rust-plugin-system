@@ -1,24 +1,39 @@
+//! Deterministic fixtures and builders for plugin-system tests.
+//!
+//! This crate is intended for `dev-dependencies` and integration tests. It
+//! provides:
+//!
+//! - Builders for manifest, request, response, and context protocol types
+//! - Assertion helpers for common test expectations
+//! - Packaging fixture utilities for file-layout tests
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+#[doc(inline)]
 pub use plugin_capabilities::{Capability, HostKind, PluginArchitecture, SkillLevel};
+#[doc(inline)]
 pub use plugin_manifest::{PluginAction, PluginManifest};
+#[doc(inline)]
 pub use plugin_protocol::{
     InvocationContext, OutputBlock, OutputKind, PluginRequest, PluginResponse, RuntimeContext,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
+/// Current package manifest schema version used by test fixtures.
 pub const PACKAGE_SCHEMA_VERSION: u32 = 1;
 
+/// Builder for [`PluginAction`] test fixtures.
 #[derive(Debug, Clone)]
 pub struct ActionBuilder {
     action: PluginAction,
 }
 
 impl ActionBuilder {
+    /// Creates a default action fixture.
     pub fn new() -> Self {
         Self {
             action: PluginAction::new(
@@ -30,31 +45,37 @@ impl ActionBuilder {
         }
     }
 
+    /// Sets action id.
     pub fn id(mut self, id: impl Into<String>) -> Self {
         self.action.id = id.into();
         self
     }
 
+    /// Sets action label.
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.action.label = label.into();
         self
     }
 
+    /// Sets action description.
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.action.description = description.into();
         self
     }
 
+    /// Sets payload hint.
     pub fn payload_hint(mut self, payload_hint: impl Into<String>) -> Self {
         self.action.payload_hint = Some(payload_hint.into());
         self
     }
 
+    /// Removes payload hint.
     pub fn without_payload_hint(mut self) -> Self {
         self.action.payload_hint = None;
         self
     }
 
+    /// Finalizes and returns action.
     pub fn build(self) -> PluginAction {
         self.action
     }
@@ -66,12 +87,23 @@ impl Default for ActionBuilder {
     }
 }
 
+/// Builder for [`PluginManifest`] test fixtures.
 #[derive(Debug, Clone)]
 pub struct ManifestBuilder {
     manifest: PluginManifest,
 }
 
 impl ManifestBuilder {
+    /// Creates a default deterministic manifest fixture.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use plugin_test_kit::ManifestBuilder;
+    ///
+    /// let manifest = ManifestBuilder::new().id("demo").name("Demo").build();
+    /// assert_eq!(manifest.id, "demo");
+    /// ```
     pub fn new() -> Self {
         Self {
             manifest: PluginManifest::new(
@@ -95,36 +127,43 @@ impl ManifestBuilder {
         }
     }
 
+    /// Sets manifest id.
     pub fn id(mut self, id: impl Into<String>) -> Self {
         self.manifest.id = id.into();
         self
     }
 
+    /// Sets manifest name.
     pub fn name(mut self, name: impl Into<String>) -> Self {
         self.manifest.name = name.into();
         self
     }
 
+    /// Sets version.
     pub fn version(mut self, version: impl Into<String>) -> Self {
         self.manifest.version = version.into();
         self
     }
 
+    /// Sets description.
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.manifest.description = description.into();
         self
     }
 
+    /// Sets architecture.
     pub fn architecture(mut self, architecture: PluginArchitecture) -> Self {
         self.manifest.architecture = architecture;
         self
     }
 
+    /// Sets skill level.
     pub fn skill_level(mut self, skill_level: SkillLevel) -> Self {
         self.manifest.skill_level = skill_level;
         self
     }
 
+    /// Sets supported hosts.
     pub fn supported_hosts<I>(mut self, supported_hosts: I) -> Self
     where
         I: IntoIterator<Item = HostKind>,
@@ -133,6 +172,7 @@ impl ManifestBuilder {
         self
     }
 
+    /// Sets capabilities.
     pub fn capabilities<I>(mut self, capabilities: I) -> Self
     where
         I: IntoIterator<Item = Capability>,
@@ -141,6 +181,7 @@ impl ManifestBuilder {
         self
     }
 
+    /// Sets tags.
     pub fn tags<I, S>(mut self, tags: I) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -150,6 +191,7 @@ impl ManifestBuilder {
         self
     }
 
+    /// Sets notes.
     pub fn notes<I, S>(mut self, notes: I) -> Self
     where
         I: IntoIterator<Item = S>,
@@ -159,11 +201,13 @@ impl ManifestBuilder {
         self
     }
 
+    /// Appends one action.
     pub fn add_action(mut self, action: PluginAction) -> Self {
         self.manifest.actions.push(action);
         self
     }
 
+    /// Replaces all actions.
     pub fn actions<I>(mut self, actions: I) -> Self
     where
         I: IntoIterator<Item = PluginAction>,
@@ -172,6 +216,7 @@ impl ManifestBuilder {
         self
     }
 
+    /// Finalizes and returns manifest.
     pub fn build(self) -> PluginManifest {
         self.manifest
     }
@@ -183,12 +228,14 @@ impl Default for ManifestBuilder {
     }
 }
 
+/// Builder for [`InvocationContext`] fixtures.
 #[derive(Debug, Clone)]
 pub struct ContextBuilder {
     context: InvocationContext,
 }
 
 impl ContextBuilder {
+    /// Creates a default CLI context fixture.
     pub fn new() -> Self {
         let mut context = InvocationContext::for_host(HostKind::Cli);
         context.workspace_root = Some("/workspace/playground".to_owned());
@@ -199,41 +246,49 @@ impl ContextBuilder {
         Self { context }
     }
 
+    /// Sets host kind.
     pub fn host(mut self, host: HostKind) -> Self {
         self.context.host = host;
         self
     }
 
+    /// Sets workspace root.
     pub fn workspace_root(mut self, workspace_root: impl Into<String>) -> Self {
         self.context.workspace_root = Some(workspace_root.into());
         self
     }
 
+    /// Removes workspace root.
     pub fn without_workspace_root(mut self) -> Self {
         self.context.workspace_root = None;
         self
     }
 
+    /// Sets plugin directory.
     pub fn plugin_dir(mut self, plugin_dir: impl Into<String>) -> Self {
         self.context.plugin_dir = Some(plugin_dir.into());
         self
     }
 
+    /// Removes plugin directory.
     pub fn without_plugin_dir(mut self) -> Self {
         self.context.plugin_dir = None;
         self
     }
 
+    /// Sets mode string.
     pub fn mode(mut self, mode: impl Into<String>) -> Self {
         self.context.mode = Some(mode.into());
         self
     }
 
+    /// Removes mode string.
     pub fn without_mode(mut self) -> Self {
         self.context.mode = None;
         self
     }
 
+    /// Finalizes and returns context.
     pub fn build(self) -> InvocationContext {
         self.context
     }
@@ -245,12 +300,23 @@ impl Default for ContextBuilder {
     }
 }
 
+/// Builder for [`PluginRequest`] fixtures.
 #[derive(Debug, Clone)]
 pub struct RequestBuilder {
     request: PluginRequest,
 }
 
 impl RequestBuilder {
+    /// Creates a default request fixture.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use plugin_test_kit::RequestBuilder;
+    ///
+    /// let request = RequestBuilder::new().plugin_id("demo").build();
+    /// assert_eq!(request.plugin_id, "demo");
+    /// ```
     pub fn new() -> Self {
         Self {
             request: PluginRequest {
@@ -262,31 +328,37 @@ impl RequestBuilder {
         }
     }
 
+    /// Sets plugin id.
     pub fn plugin_id(mut self, plugin_id: impl Into<String>) -> Self {
         self.request.plugin_id = plugin_id.into();
         self
     }
 
+    /// Sets action id.
     pub fn action_id(mut self, action_id: impl Into<String>) -> Self {
         self.request.action_id = action_id.into();
         self
     }
 
+    /// Sets payload JSON.
     pub fn payload(mut self, payload: Value) -> Self {
         self.request.payload = payload;
         self
     }
 
+    /// Sets full context.
     pub fn context(mut self, context: InvocationContext) -> Self {
         self.request.context = context;
         self
     }
 
+    /// Sets host kind on embedded context.
     pub fn host(mut self, host: HostKind) -> Self {
         self.request.context.host = host;
         self
     }
 
+    /// Finalizes and returns request.
     pub fn build(self) -> PluginRequest {
         self.request
     }
@@ -298,12 +370,14 @@ impl Default for RequestBuilder {
     }
 }
 
+/// Builder for [`PluginResponse`] fixtures.
 #[derive(Debug, Clone)]
 pub struct ResponseBuilder {
     response: PluginResponse,
 }
 
 impl ResponseBuilder {
+    /// Creates a successful response fixture.
     pub fn ok() -> Self {
         Self {
             response: PluginResponse::ok(
@@ -315,6 +389,7 @@ impl ResponseBuilder {
         }
     }
 
+    /// Creates an error response fixture.
     pub fn error() -> Self {
         Self {
             response: PluginResponse::error(
@@ -326,26 +401,31 @@ impl ResponseBuilder {
         }
     }
 
+    /// Sets plugin id.
     pub fn plugin_id(mut self, plugin_id: impl Into<String>) -> Self {
         self.response.plugin_id = plugin_id.into();
         self
     }
 
+    /// Sets action id.
     pub fn action_id(mut self, action_id: impl Into<String>) -> Self {
         self.response.action_id = action_id.into();
         self
     }
 
+    /// Sets title.
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.response.title = title.into();
         self
     }
 
+    /// Sets summary.
     pub fn summary(mut self, summary: impl Into<String>) -> Self {
         self.response.summary = summary.into();
         self
     }
 
+    /// Adds one titled output block.
     pub fn add_output(
         mut self,
         kind: OutputKind,
@@ -360,6 +440,7 @@ impl ResponseBuilder {
         self
     }
 
+    /// Adds one untitled output block.
     pub fn add_untitled_output(mut self, kind: OutputKind, body: impl Into<String>) -> Self {
         self.response.outputs.push(OutputBlock {
             kind,
@@ -369,16 +450,19 @@ impl ResponseBuilder {
         self
     }
 
+    /// Adds one next-step message.
     pub fn add_next_step(mut self, next_step: impl Into<String>) -> Self {
         self.response.suggested_next_steps.push(next_step.into());
         self
     }
 
+    /// Finalizes and returns response.
     pub fn build(self) -> PluginResponse {
         self.response
     }
 }
 
+/// Returns a deterministic two-action manifest fixture.
 pub fn sample_manifest() -> PluginManifest {
     ManifestBuilder::new()
         .add_action(
@@ -400,10 +484,12 @@ pub fn sample_manifest() -> PluginManifest {
         .build()
 }
 
+/// Returns a default request fixture.
 pub fn sample_request() -> PluginRequest {
     RequestBuilder::new().build()
 }
 
+/// Returns a default successful response fixture.
 pub fn sample_response() -> PluginResponse {
     ResponseBuilder::ok()
         .add_output(OutputKind::Json, "Bundle plan", r#"{"channel":"stable"}"#)
@@ -411,6 +497,7 @@ pub fn sample_response() -> PluginResponse {
         .build()
 }
 
+/// Asserts that a manifest contains an action id.
 pub fn assert_manifest_has_action(manifest: &PluginManifest, action_id: &str) {
     assert!(
         manifest.actions.iter().any(|action| action.id == action_id),
@@ -424,6 +511,7 @@ pub fn assert_manifest_has_action(manifest: &PluginManifest, action_id: &str) {
     );
 }
 
+/// Asserts that supported hosts match exactly.
 pub fn assert_manifest_hosts(manifest: &PluginManifest, expected_hosts: &[HostKind]) {
     assert_eq!(
         manifest.supported_hosts, expected_hosts,
@@ -432,6 +520,7 @@ pub fn assert_manifest_hosts(manifest: &PluginManifest, expected_hosts: &[HostKi
     );
 }
 
+/// Asserts payload equality for a request.
 pub fn assert_payload_eq(request: &PluginRequest, expected_payload: Value) {
     assert_eq!(
         request.payload, expected_payload,
@@ -440,6 +529,7 @@ pub fn assert_payload_eq(request: &PluginRequest, expected_payload: Value) {
     );
 }
 
+/// Asserts response success.
 pub fn assert_response_ok(response: &PluginResponse) {
     assert!(
         response.success,
@@ -448,6 +538,7 @@ pub fn assert_response_ok(response: &PluginResponse) {
     );
 }
 
+/// Asserts response failure.
 pub fn assert_response_error(response: &PluginResponse) {
     assert!(
         !response.success,
@@ -456,6 +547,7 @@ pub fn assert_response_error(response: &PluginResponse) {
     );
 }
 
+/// Asserts an output body contains a substring.
 pub fn assert_output_contains(response: &PluginResponse, output_title: Option<&str>, needle: &str) {
     let matching_output =
         response
@@ -489,6 +581,7 @@ pub fn assert_output_contains(response: &PluginResponse, output_title: Option<&s
     );
 }
 
+/// Asserts suggested next steps match exactly.
 pub fn assert_next_steps(response: &PluginResponse, expected_steps: &[&str]) {
     let actual_steps = response
         .suggested_next_steps
@@ -502,39 +595,58 @@ pub fn assert_next_steps(response: &PluginResponse, expected_steps: &[&str]) {
     );
 }
 
+/// Runtime packaging mode for bundle fixtures.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum PackageRuntime {
+    /// Native JSON dynamic library package.
     NativeJson,
+    /// ABI-stable dynamic library package.
     AbiStable,
+    /// Wasm package.
     Wasm,
 }
 
+/// Artifact category for package manifests.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum ArtifactKind {
+    /// Native/ABI dynamic library artifact.
     DynamicLibrary,
+    /// Wasm module artifact.
     WasmModule,
+    /// Embedded plugin manifest snapshot.
     ManifestSnapshot,
+    /// Release metadata document.
     ReleaseMetadata,
 }
 
+/// One artifact entry in a package manifest fixture.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ArtifactManifest {
+    /// Relative artifact path.
     pub path: String,
+    /// Artifact category.
     pub kind: ArtifactKind,
+    /// Whether artifact must exist for validation.
     pub required: bool,
 }
 
+/// Release metadata fixture attached to package manifests.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReleaseMetadata {
+    /// Release channel.
     pub channel: String,
+    /// Build target triple.
     pub target: String,
+    /// Supported hosts for this package release.
     pub hosts: Vec<HostKind>,
+    /// Optional installation hint text.
     pub installer_hint: Option<String>,
 }
 
 impl ReleaseMetadata {
+    /// Creates release metadata.
     pub fn new(
         channel: impl Into<String>,
         target: impl Into<String>,
@@ -548,24 +660,34 @@ impl ReleaseMetadata {
         }
     }
 
+    /// Sets installation hint.
     pub fn with_installer_hint(mut self, installer_hint: impl Into<String>) -> Self {
         self.installer_hint = Some(installer_hint.into());
         self
     }
 }
 
+/// On-disk package manifest fixture.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PackageManifest {
+    /// Schema version.
     pub schema_version: u32,
+    /// Package name.
     pub package_name: String,
+    /// Runtime packaging mode.
     pub runtime: PackageRuntime,
+    /// Entrypoint artifact path.
     pub entrypoint: String,
+    /// Embedded plugin manifest.
     pub plugin: PluginManifest,
+    /// Declared artifacts.
     pub artifacts: Vec<ArtifactManifest>,
+    /// Release metadata.
     pub release: ReleaseMetadata,
 }
 
 impl PackageManifest {
+    /// Returns canonical manifest snapshot file name for this runtime mode.
     pub fn manifest_file_name(&self) -> &'static str {
         match self.runtime {
             PackageRuntime::Wasm => "wasm-plugin.json",
@@ -573,6 +695,7 @@ impl PackageManifest {
         }
     }
 
+    /// Returns required artifact paths that do not exist under `root`.
     pub fn missing_required_artifacts(&self, root: impl AsRef<Path>) -> Vec<PathBuf> {
         self.artifacts
             .iter()
@@ -583,6 +706,7 @@ impl PackageManifest {
     }
 }
 
+/// File-system package fixture builder and writer.
 #[derive(Debug, Clone)]
 pub struct PackageFixture {
     manifest: PackageManifest,
@@ -590,6 +714,7 @@ pub struct PackageFixture {
 }
 
 impl PackageFixture {
+    /// Creates a native JSON package fixture.
     pub fn native_json(
         package_name: impl Into<String>,
         plugin: PluginManifest,
@@ -606,6 +731,7 @@ impl PackageFixture {
         )
     }
 
+    /// Creates an ABI-stable package fixture.
     pub fn abi_stable(
         package_name: impl Into<String>,
         plugin: PluginManifest,
@@ -622,6 +748,7 @@ impl PackageFixture {
         )
     }
 
+    /// Creates a Wasm package fixture.
     pub fn wasm(
         package_name: impl Into<String>,
         plugin: PluginManifest,
@@ -677,6 +804,7 @@ impl PackageFixture {
         }
     }
 
+    /// Marks the entrypoint artifact as required.
     pub fn with_required_entrypoint(mut self) -> Self {
         if let Some(artifact) = self
             .manifest
@@ -689,6 +817,7 @@ impl PackageFixture {
         self
     }
 
+    /// Adds an additional text file to the fixture output.
     pub fn with_text_file(
         mut self,
         relative_path: impl Into<PathBuf>,
@@ -699,6 +828,7 @@ impl PackageFixture {
         self
     }
 
+    /// Writes fixture files to disk and returns discovered output paths.
     pub fn write_to(&self, root: impl AsRef<Path>) -> io::Result<WrittenPackageFixture> {
         let root = root.as_ref();
         fs::create_dir_all(root)?;
@@ -737,11 +867,16 @@ impl PackageFixture {
     }
 }
 
+/// Paths produced when a [`PackageFixture`] is written.
 #[derive(Debug, Clone)]
 pub struct WrittenPackageFixture {
+    /// Root output directory.
     pub root: PathBuf,
+    /// Path to `package.json`.
     pub package_manifest_path: PathBuf,
+    /// Path to plugin manifest snapshot file.
     pub manifest_snapshot_path: PathBuf,
+    /// Path to `release.json`.
     pub release_metadata_path: PathBuf,
 }
 
