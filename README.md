@@ -53,6 +53,41 @@ Phase 3 turns the host apps into a real comparison set instead of a binary list:
 
 If you want the guided comparison, start with `docs/hosts/host-matrix.md` and `docs/hosts/surface-comparison.md`.
 
+### Host × Architecture Matrix
+
+| Host | Native JSON | ABI-Stable | WASM | UI Type |
+|------|:-----------:|:----------:|:----:|---------|
+| host-cli | ✅ | ✅ | ✅ | Terminal |
+| host-tui | ✅ | — | — | Terminal (Ratatui) |
+| host-egui | ✅ | — | — | Desktop (egui) |
+| host-iced | ✅ | — | — | Desktop (Iced) |
+| host-dioxus-desktop | ✅ | — | — | Desktop (Dioxus) |
+| host-web | ✅ | — | — | Browser (Axum SSR) |
+| host-service | ✅ | — | — | API (Axum JSON) |
+
+> Only `host-cli` loads all three plugin tracks directly. The other hosts use `host-core::Playground`, which loads native JSON plugins via `plugin-loader`.
+
+### Plugin Catalog
+
+| Plugin | Architecture | Skill Level | Actions |
+|--------|-------------|-------------|:-------:|
+| hello-world | Native JSON | Basic | 1 |
+| logger | Native JSON | Basic | 1 |
+| formatter | Native JSON | Basic | 1 |
+| transformer | Native JSON | Intermediate | 1 |
+| command-pack | Native JSON | Intermediate | 1 |
+| ui-panel | Native JSON | Intermediate | 1 |
+| config-provider | Native JSON | Intermediate | 3 |
+| filesystem-tools | Native JSON | Intermediate | 3 |
+| data-pipeline | Native JSON | Intermediate | 3 |
+| metrics-observer | Native JSON | Intermediate | 2 |
+| service-hooks | Native JSON | Intermediate | 2 |
+| tui-tools | Native JSON | Intermediate | 2 |
+| abi-stable-greeter | ABI-Stable | Advanced | 2 |
+| abi-stable-command-pack | ABI-Stable | Advanced | 1 |
+| wasm-sandboxed | WASM | Advanced | 3 |
+| web-widget | WASM | Advanced | 3 |
+
 ## Quickstart
 
 ```bash

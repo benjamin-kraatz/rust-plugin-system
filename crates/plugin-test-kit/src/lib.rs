@@ -878,19 +878,66 @@ mod tests {
         assert!(plugin_ids.iter().any(|plugin_id| plugin_id == "web-widget"));
 
         let plugin = load_plugin_from_dir(&workspace.join("plugins/wasm-sandboxed")).unwrap();
-        let response = plugin
+
+        // Echo action: module parses action_id and routes to the echo handler
+        let echo_response = plugin
             .invoke(
                 &RequestBuilder::new()
                     .plugin_id("wasm-sandboxed")
-                    .action_id("run-demo")
+                    .action_id("echo")
                     .payload(json!({"note":"phase4"}))
                     .host(HostKind::Web)
                     .build(),
             )
             .unwrap();
 
-        assert_response_ok(&response);
-        assert_output_contains(&response, Some("Sandbox"), "WebAssembly module");
+        assert_response_ok(&echo_response);
+        assert_output_contains(&echo_response, Some("Echo"), "WASM sandbox");
+
+        // Compute action: computes factorial(10) inside the WASM module
+        let compute_response = plugin
+            .invoke(
+                &RequestBuilder::new()
+                    .plugin_id("wasm-sandboxed")
+                    .action_id("compute")
+                    .payload(json!({}))
+                    .host(HostKind::Cli)
+                    .build(),
+            )
+            .unwrap();
+
+        assert_response_ok(&compute_response);
+        assert_output_contains(&compute_response, Some("Factorial"), "3628800");
+
+        // Validate action with payload: confirms payload has content
+        let validate_response = plugin
+            .invoke(
+                &RequestBuilder::new()
+                    .plugin_id("wasm-sandboxed")
+                    .action_id("validate")
+                    .payload(json!({"data":"test"}))
+                    .host(HostKind::Cli)
+                    .build(),
+            )
+            .unwrap();
+
+        assert_response_ok(&validate_response);
+        assert_output_contains(&validate_response, Some("Valid"), "validated");
+
+        // Validate action with empty payload: reports empty
+        let validate_empty = plugin
+            .invoke(
+                &RequestBuilder::new()
+                    .plugin_id("wasm-sandboxed")
+                    .action_id("validate")
+                    .payload(json!({}))
+                    .host(HostKind::Cli)
+                    .build(),
+            )
+            .unwrap();
+
+        assert_response_ok(&validate_empty);
+        assert_output_contains(&validate_empty, Some("Empty Payload"), "empty");
     }
 
     #[test]
