@@ -30,15 +30,25 @@ The repository now has all three tracks represented in working form:
 - **ABI-stable dylib track** through `crates/plugin-abi` and the `abi-stable-*` plugins
 - **WASM sandboxed track** through `crates/plugin-wasm` and WAT-backed modules executed by Wasmtime
 
-The next layer of work is continuing to deepen each track from runnable course examples into richer, more production-shaped ecosystems.
+The next layer of work is no longer just runtime experimentation. Phase 4 now documents the production-shaped contract layer that sits on top of those tracks.
+
+Use the new reference set for that pass:
+
+- `docs/reference/production-contracts.md`
+- `docs/reference/version-compatibility.md`
+- `docs/reference/lifecycle-execution.md`
+- `docs/reference/trust-capabilities.md`
+- `docs/reference/wasm-sandboxing.md`
+- `docs/reference/testing-packaging.md`
 
 ## Current commands
 
 ```bash
-cargo run -p host-cli -- run abi-stable-greeter greet '{"name":"Rustacean"}'
-cargo run -p host-cli -- run abi-stable-command-pack suggest '{}'
+cargo run -p host-cli -- inspect service-hooks
+cargo run -p host-cli -- run service-hooks preview-delivery '{"service":"billing","event":"deploy.succeeded","attempt":2}'
+cargo run -p host-cli -- run abi-stable-greeter plan-upgrade '{"from_host":"0.1.0","to_host":"0.2.0","consumer":"host-cli"}'
 cargo run -p host-cli -- run wasm-sandboxed run-demo '{"note":"sandbox"}'
-cargo run -p host-cli -- run web-widget render-widget '{"theme":"dark"}'
+cargo run -p host-cli -- run web-widget render-widget '{"theme":"dark","variant":"incident"}'
 ```
 
 ## Expansion ideas
@@ -46,4 +56,5 @@ cargo run -p host-cli -- run web-widget render-widget '{"theme":"dark"}'
 - Rust-authored `wasm32` plugins to complement the visible WAT modules
 - richer ABI-stable module evolution examples across versions
 - host-specific rendering layers for advanced track plugins in GUI/web/service hosts
-- packaging and distribution flows for each plugin architecture
+- stronger runtime enforcement for lifecycle, async jobs, and capability policies
+- registry, signing, and upgrade workflows on top of the current packaging examples

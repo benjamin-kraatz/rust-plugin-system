@@ -1,0 +1,10 @@
+{
+  "channel": "stable",
+  "target": "wasm32-wasip1",
+  "hosts": [
+    "cli",
+    "web",
+    "service"
+  ],
+  "installer_hint": "Keep wasm-plugin.json and module.wat together so the Wasmtime loader can discover both."
+}

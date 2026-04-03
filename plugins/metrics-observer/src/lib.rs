@@ -1,5 +1,8 @@
 use plugin_sdk::plugin_manifest::{
-    Capability, HostKind, PluginAction, PluginArchitecture, PluginManifest, SkillLevel,
+    Capability, CapabilityContract, CapabilityRequirement, CompatibilityContract, DegradationRule,
+    DegradationSeverity, ExecutionContract, ExecutionMode, HostKind, LifecycleContract,
+    LifecycleHook, LifecycleState, NetworkAccess, PluginAction, PluginArchitecture, PluginManifest,
+    SandboxLevel, SkillLevel, TestedHost, TrustLevel, TrustMetadata, VersionRange, VersionStrategy,
 };
 use plugin_sdk::plugin_protocol::{OutputKind, PluginRequest, PluginResponse};
 use plugin_sdk::{JsonPlugin, export_plugin};
@@ -56,6 +59,74 @@ impl JsonPlugin for MetricsObserverPlugin {
             "Designed for demos where hosts need structured observability output without touching real metrics backends.",
             "Outputs stay deterministic so they are safe for CLI smoke tests and web previews.",
         ])
+        .with_compatibility(
+            CompatibilityContract::new(VersionStrategy::Semver)
+                .with_protocol_version("0.1.0")
+                .with_host_version(
+                    VersionRange::new()
+                        .with_minimum("0.1.0")
+                        .with_maximum("0.3.0"),
+                )
+                .with_tested_hosts(vec![
+                    TestedHost::new(HostKind::Cli, "0.1.0"),
+                    TestedHost::new(HostKind::Web, "0.1.0"),
+                    TestedHost::new(HostKind::Service, "0.1.0"),
+                ])
+                .with_notes([
+                    "The plugin follows additive response evolution and keeps deterministic output shapes stable.",
+                ]),
+        )
+        .with_trust(
+            TrustMetadata::new(TrustLevel::Reviewed, SandboxLevel::HostMediated, NetworkAccess::None)
+                .with_data_access(["request-payload-only"])
+                .with_provenance("bundled-first-party")
+                .with_notes([
+                    "No network or wall-clock access is required.",
+                    "Hosts can safely replay requests for tests and previews.",
+                ]),
+        )
+        .with_lifecycle(
+            LifecycleContract::new(LifecycleState::Ready)
+                .with_hooks(vec![
+                    LifecycleHook::Load,
+                    LifecycleHook::Invoke,
+                    LifecycleHook::HealthCheck,
+                ])
+                .with_health_probe("re-run summarize-signals with a canned payload")
+                .with_notes(["All state is derived from the invocation payload."]),
+        )
+        .with_execution(
+            ExecutionContract::new(ExecutionMode::Sync)
+                .with_async_support(true)
+                .with_cancellable(true)
+                .with_idempotent(true)
+                .with_timeout_ms(2_000)
+                .with_max_concurrency(8)
+                .with_notes([
+                    "Async hosts may schedule larger rollups as background jobs without changing the response shape.",
+                ]),
+        )
+        .with_capability_contract(
+            CapabilityContract::new()
+                .with_required(vec![CapabilityRequirement::new(
+                    "stdout-json",
+                    "Hosts must be able to render or forward structured metric snapshots.",
+                )])
+                .with_optional(vec![CapabilityRequirement::new(
+                    "markdown-output",
+                    "Operator-facing summaries render best as markdown.",
+                )
+                .with_fallback("Hosts can fall back to the JSON block if markdown rendering is unavailable.")])
+                .with_degradation(vec![DegradationRule::new(
+                    "operator-summary",
+                    "If markdown-output is unavailable the plugin still returns structured JSON only.",
+                    DegradationSeverity::Low,
+                )
+                .when_missing(["markdown-output"])])
+                .with_notes([
+                    "Capability negotiation is intentionally host-local and deterministic.",
+                ]),
+        )
     }
 
     fn invoke(request: PluginRequest) -> Result<PluginResponse, String> {

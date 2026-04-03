@@ -1,0 +1,177 @@
+{
+  "id": "abi-stable-greeter",
+  "name": "ABI-Stable Greeter",
+  "version": "0.1.0",
+  "description": "Demonstrates a runtime-loaded plugin using abi_stable instead of raw FFI symbols.",
+  "architecture": "abi-stable",
+  "skill_level": "advanced",
+  "supported_hosts": [
+    "cli",
+    "service"
+  ],
+  "capabilities": [
+    {
+      "key": "abi-stable-greeting",
+      "description": "Produces a greeting through an ABI-stable root module."
+    },
+    {
+      "key": "compatibility-handshake",
+      "description": "Summarizes compatibility windows for long-lived ABI-stable plugins."
+    }
+  ],
+  "tags": [
+    "abi-stable",
+    "advanced",
+    "native",
+    "compatibility"
+  ],
+  "actions": [
+    {
+      "id": "greet",
+      "label": "Greet",
+      "description": "Return a greeting from an ABI-stable runtime-loaded plugin.",
+      "payload_hint": "{\"name\":\"Plugin Explorer\"}",
+      "contract": {
+        "execution_mode": "sync",
+        "idempotent": true,
+        "mutates_workspace": false,
+        "timeout_ms": 1000
+      },
+      "input_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/abi-stable-greeter/greet-input.schema.json",
+        "version": "1.0.0"
+      },
+      "output_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/abi-stable-greeter/greet-output.schema.json",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "id": "plan-upgrade",
+      "label": "Plan upgrade",
+      "description": "Summarize a host compatibility window and rollout notes for this ABI-stable plugin.",
+      "payload_hint": "{\"from_host\":\"0.1.0\",\"to_host\":\"0.2.0\",\"consumer\":\"host-cli\"}",
+      "contract": {
+        "execution_mode": "sync",
+        "idempotent": true,
+        "mutates_workspace": false,
+        "timeout_ms": 1500
+      },
+      "input_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/abi-stable-greeter/plan-upgrade-input.schema.json",
+        "version": "1.0.0"
+      },
+      "output_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/abi-stable-greeter/plan-upgrade-output.schema.json",
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "notes": [
+    "The root module surface stays intentionally small so additive metadata can evolve independently.",
+    "Phase 4 uses this plugin to demonstrate compatibility windows and ABI-oriented rollout guidance."
+  ],
+  "maintenance": {
+    "status": "active",
+    "owner": "plugin-platform",
+    "support_tier": "course-demo",
+    "channel": "stable"
+  },
+  "compatibility": {
+    "strategy": "semver",
+    "protocol_version": "0.1.0",
+    "host_version": {
+      "minimum": "0.1.0",
+      "maximum": "0.3.0"
+    },
+    "tested_hosts": [
+      {
+        "host": "cli",
+        "version": "0.1.0",
+        "notes": "CLI hosts validate the full manifest and action catalog."
+      },
+      {
+        "host": "service",
+        "version": "0.1.0",
+        "notes": "Service hosts can forward structured upgrade reports downstream."
+      }
+    ],
+    "notes": [
+      "The ABI-stable root module keeps greet and plan-upgrade callable while additive manifest metadata evolves.",
+      "Host upgrades inside the declared window should not require recompiling consumers that only use the exported root module."
+    ]
+  },
+  "trust": {
+    "level": "reviewed",
+    "sandbox": "process",
+    "network": "none",
+    "deterministic": true,
+    "local_only": true,
+    "data_access": [
+      "request-payload-only"
+    ],
+    "provenance": "bundled-first-party",
+    "notes": [
+      "All responses are deterministic and side-effect free.",
+      "This crate is intended to model long-lived ABI contracts, not privileged host access."
+    ]
+  },
+  "lifecycle": {
+    "state": "ready",
+    "stateless": true,
+    "requires_explicit_shutdown": false,
+    "hooks": [
+      "load",
+      "invoke",
+      "shutdown"
+    ],
+    "health_probe": "Call plan-upgrade with a canned 0.1.x -> 0.2.x transition request.",
+    "notes": [
+      "The sample is stateless; shutdown exists to document the lifecycle a production ABI module would expose."
+    ]
+  },
+  "execution": {
+    "default_mode": "sync",
+    "supports_async": false,
+    "cancellable": false,
+    "idempotent": true,
+    "progress_reporting": false,
+    "timeout_ms": 1500,
+    "max_concurrency": 8,
+    "notes": [
+      "Responses are immediate because all compatibility data is embedded in the manifest."
+    ]
+  },
+  "capability_contract": {
+    "required": [
+      {
+        "key": "stdout-json",
+        "detail": "Hosts should be able to surface structured compatibility envelopes."
+      }
+    ],
+    "optional": [
+      {
+        "key": "code-output",
+        "detail": "Command snippets and ABI notes read best in code blocks.",
+        "fallback": "Hosts can fall back to plain text guidance when code blocks are unavailable."
+      }
+    ],
+    "degradation": [
+      {
+        "feature": "formatted-rollout-guidance",
+        "behavior": "Without code-output the host should render upgrade guidance as plain text.",
+        "severity": "low",
+        "when_missing": [
+          "code-output"
+        ]
+      }
+    ],
+    "notes": [
+      "This contract is intentionally lightweight so both CLI and service hosts stay compatible."
+    ]
+  }
+}

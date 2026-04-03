@@ -1,0 +1,20 @@
+native-json-hello-world/
+├── bundle-layout.txt
+├── install-local.sh
+├── package-manifest.json
+├── release-metadata.json
+└── layout/
+    └── plugins/
+        └── hello-world/
+            ├── libhello_world.dylib
+            └── plugin-manifest.json
+
+Build step:
+  cargo build -p hello-world
+
+Bundle step:
+  cp target/debug/libhello_world.dylib \
+    examples/packaging/native-json-hello-world/layout/plugins/hello-world/
+
+Validation step:
+  cargo run -p host-cli -- inspect hello-world

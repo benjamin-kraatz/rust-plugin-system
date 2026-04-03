@@ -1,0 +1,40 @@
+{
+  "id": "hello-world",
+  "name": "Hello World",
+  "version": "0.1.0",
+  "description": "The simplest runtime-loaded plugin in the playground.",
+  "architecture": "native-json",
+  "skill_level": "basic",
+  "supported_hosts": [
+    "cli",
+    "tui",
+    "egui",
+    "iced",
+    "dioxus",
+    "web",
+    "service"
+  ],
+  "capabilities": [
+    {
+      "key": "greeting",
+      "description": "Returns a friendly greeting for any host surface."
+    }
+  ],
+  "tags": [
+    "starter",
+    "native-plugin",
+    "teaching"
+  ],
+  "actions": [
+    {
+      "id": "greet",
+      "label": "Greet",
+      "description": "Say hello to a supplied name.",
+      "payload_hint": "{\"name\":\"Rustacean\"}"
+    }
+  ],
+  "notes": [
+    "This plugin is meant to be the first one you inspect in the repo.",
+    "It demonstrates the JSON-over-FFI boundary with minimal complexity."
+  ]
+}

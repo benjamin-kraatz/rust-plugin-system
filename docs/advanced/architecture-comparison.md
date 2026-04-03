@@ -27,3 +27,15 @@ Use this when isolation, portability, or trust boundaries matter more than direc
 - Native JSON dylib: `hello-world`, `formatter`, `transformer`
 - ABI-stable dylib: `abi-stable-greeter`, `abi-stable-command-pack`
 - WASM sandboxed: `wasm-sandboxed`, `web-widget`
+
+
+## Phase 4 follow-through
+
+The advanced tracks are easier to compare now that the shared crates expose explicit production metadata. After reading this page, continue with:
+
+- `docs/reference/version-compatibility.md`
+- `docs/reference/lifecycle-execution.md`
+- `docs/reference/trust-capabilities.md`
+- `docs/reference/wasm-sandboxing.md`
+
+Those docs explain which parts of the production story are shared across all tracks and which parts are only concretely enforced on the Wasm path today.

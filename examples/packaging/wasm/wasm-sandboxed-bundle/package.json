@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "package_name": "wasm-sandboxed-bundle",
+  "runtime": "wasm",
+  "entrypoint": "module.wat",
+  "plugin": {
+    "id": "wasm-sandboxed",
+    "name": "WASM Sandboxed Demo",
+    "version": "0.1.0",
+    "description": "A sandboxed plugin executed through Wasmtime with a static JSON response.",
+    "architecture": "wasm",
+    "skill_level": "advanced",
+    "supported_hosts": [
+      "cli",
+      "web",
+      "service"
+    ],
+    "capabilities": [
+      {
+        "key": "sandboxed-response",
+        "description": "Returns a response from a sandboxed WebAssembly module."
+      }
+    ],
+    "tags": [
+      "wasm",
+      "sandboxed",
+      "advanced"
+    ],
+    "actions": [
+      {
+        "id": "run-demo",
+        "label": "Run demo",
+        "description": "Execute the Wasmtime-hosted sandboxed plugin.",
+        "payload_hint": "{\"note\":\"sandbox me\"}"
+      }
+    ],
+    "compatibility": {
+      "strategy": "semver",
+      "protocol_version": "0.1.0",
+      "host_version": {
+        "minimum": "0.1.0",
+        "maximum": "0.3.0"
+      },
+      "tested_hosts": [
+        {
+          "host": "cli",
+          "version": "0.1.0"
+        },
+        {
+          "host": "web",
+          "version": "0.1.0"
+        }
+      ],
+      "notes": [
+        "The manifest is authored to remain forward-compatible with additive host/runtime metadata."
+      ]
+    },
+    "trust": {
+      "level": "restricted",
+      "sandbox": "wasm",
+      "network": "none",
+      "deterministic": true,
+      "local_only": true,
+      "data_access": [
+        "request-payload-only"
+      ],
+      "provenance": "bundled-first-party",
+      "notes": [
+        "The module is intentionally sandboxed and has no outbound I/O."
+      ]
+    },
+    "lifecycle": {
+      "state": "ready",
+      "stateless": true,
+      "requires_explicit_shutdown": false,
+      "hooks": [
+        "load",
+        "invoke"
+      ],
+      "notes": [
+        "The module is instantiated per invocation in the current demo runtime."
+      ]
+    },
+    "execution": {
+      "default_mode": "sync",
+      "supports_async": true,
+      "cancellable": true,
+      "idempotent": true,
+      "progress_reporting": false,
+      "timeout_ms": 5000,
+      "max_concurrency": 4,
+      "notes": [
+        "Hosts may offload invocation to background workers while preserving the same contract."
+      ]
+    },
+    "capability_contract": {
+      "required": [
+        {
+          "key": "stdout-json",
+          "detail": "Hosts need to surface the sandboxed response body."
+        }
+      ],
+      "optional": [
+        {
+          "key": "sandboxed-runtime",
+          "detail": "Hosts that understand sandboxed runtimes can label the isolation boundary.",
+          "fallback": "Fallback hosts can still execute the demo through the default Wasmtime path."
+        }
+      ],
+      "degradation": [
+        {
+          "feature": "sandbox-labeling",
+          "behavior": "If sandboxed-runtime is unavailable the host should omit isolation-specific UI affordances.",
+          "severity": "low",
+          "when_missing": [
+            "sandboxed-runtime"
+          ]
+        }
+      ],
+      "notes": [
+        "Capability negotiation stays local to the host/runtime pair."
+      ]
+    },
+    "notes": [
+      "This module is authored as WAT to keep the runtime mechanics visible.",
+      "A future track can replace it with Rust-authored wasm32 plugins."
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "module.wat",
+      "kind": "wasm-module",
+      "required": true
+    },
+    {
+      "path": "wasm-plugin.json",
+      "kind": "manifest-snapshot",
+      "required": true
+    },
+    {
+      "path": "release.json",
+      "kind": "release-metadata",
+      "required": true
+    }
+  ],
+  "release": {
+    "channel": "stable",
+    "target": "wasm32-wasip1",
+    "hosts": [
+      "cli",
+      "web",
+      "service"
+    ],
+    "installer_hint": "Keep wasm-plugin.json and module.wat together so the Wasmtime loader can discover both."
+  }
+}

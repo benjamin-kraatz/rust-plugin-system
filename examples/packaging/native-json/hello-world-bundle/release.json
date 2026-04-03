@@ -1,0 +1,11 @@
+{
+  "channel": "stable",
+  "target": "x86_64-apple-darwin",
+  "hosts": [
+    "cli",
+    "tui",
+    "web",
+    "service"
+  ],
+  "installer_hint": "Copy the dylib into a directory referenced by RUST_PLUGIN_SYSTEM_PLUGIN_DIR."
+}

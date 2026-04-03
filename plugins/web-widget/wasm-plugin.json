@@ -10,18 +10,196 @@
     {
       "key": "widget-markup",
       "description": "Returns markdown-like widget content from a sandboxed module."
+    },
+    {
+      "key": "widget-negotiation",
+      "description": "Describes how the widget degrades across richer and simpler host surfaces."
     }
   ],
-  "tags": ["wasm", "web", "widget"],
+  "tags": ["wasm", "web", "widget", "advanced"],
   "actions": [
     {
       "id": "render-widget",
       "label": "Render widget",
       "description": "Return a widget-oriented response from a sandboxed module.",
-      "payload_hint": "{\"theme\":\"dark\"}"
+      "payload_hint": "{\"theme\":\"dark\",\"variant\":\"incident\"}",
+      "contract": {
+        "execution_mode": "async",
+        "idempotent": true,
+        "mutates_workspace": false,
+        "timeout_ms": 4000,
+        "async_metadata": {
+          "execution_mode": "async",
+          "detached": false,
+          "supports_streaming": true,
+          "completion_timeout_ms": 8000,
+          "retry_policy": {
+            "max_attempts": 2,
+            "initial_backoff_ms": 250,
+            "max_backoff_ms": 1000,
+            "strategy": "linear",
+            "retry_on": ["wasm-trap", "host-retry"]
+          }
+        },
+        "constraints": {
+          "required": [
+            {
+              "key": "stdout-json",
+              "detail": "Hosts must surface the structured widget payload."
+            }
+          ],
+          "optional": [
+            {
+              "key": "rich-ui",
+              "detail": "Browser-style hosts can render cards instead of plain summaries.",
+              "fallback": "CLI hosts can print the widget body as markdown or JSON."
+            },
+            {
+              "key": "sandboxed-runtime",
+              "detail": "Hosts can label the WASM isolation boundary.",
+              "fallback": "Fallback hosts can still execute the module without isolation-specific chrome."
+            }
+          ],
+          "max_payload_bytes": 4096,
+          "network_access": "none",
+          "sandbox_level": "wasm"
+        }
+      },
+      "input_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/web-widget/render-widget-input.schema.json",
+        "version": "1.0.0"
+      },
+      "output_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/web-widget/render-widget-output.schema.json",
+        "version": "1.0.0"
+      }
     }
   ],
+  "compatibility": {
+    "strategy": "semver",
+    "protocol_version": "0.1.0",
+    "host_version": {
+      "minimum": "0.1.0",
+      "maximum": "0.3.0"
+    },
+    "tested_hosts": [
+      {
+        "host": "cli",
+        "version": "0.1.0",
+        "notes": "CLI hosts degrade rich UI to deterministic markdown-like output."
+      },
+      {
+        "host": "web",
+        "version": "0.1.0",
+        "notes": "Web hosts can present richer cards while keeping the same output contract."
+      }
+    ],
+    "notes": [
+      "The widget manifest is authored to stay forward-compatible with additive rendering metadata."
+    ]
+  },
+  "trust": {
+    "level": "restricted",
+    "sandbox": "wasm",
+    "network": "none",
+    "deterministic": true,
+    "local_only": true,
+    "data_access": ["request-payload-only"],
+    "provenance": "bundled-first-party",
+    "notes": [
+      "The module never touches the DOM or outbound network directly.",
+      "Hosts decide how to map the returned widget payload onto their own surfaces."
+    ]
+  },
+  "lifecycle": {
+    "state": "ready",
+    "stateless": true,
+    "requires_explicit_shutdown": false,
+    "hooks": ["load", "invoke", "suspend", "resume"],
+    "health_probe": "Render a canned incident widget and verify that the markdown payload still parses.",
+    "notes": [
+      "Suspend/resume metadata models UI hosts that cache widget state between frames.",
+      "The current runtime still instantiates the module per invocation."
+    ]
+  },
+  "execution": {
+    "default_mode": "async",
+    "supports_async": true,
+    "cancellable": true,
+    "idempotent": true,
+    "progress_reporting": false,
+    "timeout_ms": 4000,
+    "max_concurrency": 16,
+    "async_metadata": {
+      "execution_mode": "async",
+      "detached": false,
+      "supports_streaming": true,
+      "completion_timeout_ms": 8000,
+      "retry_policy": {
+        "max_attempts": 2,
+        "initial_backoff_ms": 250,
+        "max_backoff_ms": 1000,
+        "strategy": "linear",
+        "retry_on": ["wasm-trap", "host-retry"]
+      }
+    },
+    "notes": [
+      "Rich hosts may treat rendering as a background task while preserving the same contract.",
+      "Foreground CLI rendering remains valid when async job tracking is unavailable."
+    ]
+  },
+  "capability_contract": {
+    "required": [
+      {
+        "key": "stdout-json",
+        "detail": "Hosts need to surface the widget payload or forward it downstream."
+      }
+    ],
+    "optional": [
+      {
+        "key": "rich-ui",
+        "detail": "Browser-oriented hosts can render richer visual cards.",
+        "fallback": "Other hosts can fall back to markdown-like widget text."
+      },
+      {
+        "key": "sandboxed-runtime",
+        "detail": "Hosts can label the WASM isolation boundary.",
+        "fallback": "If unavailable the host should omit sandbox-specific labels only."
+      },
+      {
+        "key": "async-jobs",
+        "detail": "Async-capable hosts can queue widget rendering jobs.",
+        "fallback": "The widget can still render synchronously for deterministic demos."
+      }
+    ],
+    "degradation": [
+      {
+        "feature": "rich-widget-chrome",
+        "behavior": "If rich-ui is unavailable the host should print the widget body as markdown or plain text.",
+        "severity": "low",
+        "when_missing": ["rich-ui"]
+      },
+      {
+        "feature": "sandbox-badges",
+        "behavior": "If sandboxed-runtime is unavailable the host should omit isolation-specific badges.",
+        "severity": "low",
+        "when_missing": ["sandboxed-runtime"]
+      },
+      {
+        "feature": "background-widget-jobs",
+        "behavior": "If async-jobs is unavailable the host should render the widget in the foreground.",
+        "severity": "low",
+        "when_missing": ["async-jobs"]
+      }
+    ],
+    "notes": [
+      "This complements the generic wasm-sandboxed example with a UI-oriented degradation story."
+    ]
+  },
   "notes": [
-    "This complements the generic wasm-sandboxed example with a more UI-flavored response."
+    "This complements the generic wasm-sandboxed example with a more UI-flavored response.",
+    "Phase 4 uses it to demonstrate advanced WASM execution metadata and host-specific degradation."
   ]
 }

@@ -112,3 +112,22 @@ The repository also includes:
 
 - **ABI-stable native plugins** loaded with `abi_stable`
 - **sandboxed WASM plugins** executed with Wasmtime
+
+## 8. Read the Phase 4 contract layer
+
+Once the commands above feel natural, use these docs as the production-minded reference path:
+
+- `docs/reference/production-contracts.md` - guided entry point for the Phase 4 material
+- `docs/reference/version-compatibility.md` - compatibility windows, protocol versions, tested hosts, and strategy caveats
+- `docs/reference/lifecycle-execution.md` - lifecycle hooks, execution mode, async hints, timeouts, and response metadata
+- `docs/reference/trust-capabilities.md` - trust levels, security metadata, capability negotiation, and degradation semantics
+- `docs/reference/wasm-sandboxing.md` - what the current Wasmtime sandbox does and does not provide
+- `docs/reference/testing-packaging.md` - `plugin-test-kit`, package fixtures, and example bundle flows
+
+A practical Phase 4 inspection loop is:
+
+```bash
+cargo run -p host-cli -- inspect metrics-observer
+cargo run -p host-cli -- inspect abi-stable-command-pack
+cargo run -p host-cli -- inspect wasm-sandboxed
+```

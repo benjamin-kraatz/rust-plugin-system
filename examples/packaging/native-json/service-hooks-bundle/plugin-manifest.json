@@ -1,0 +1,297 @@
+{
+  "id": "service-hooks",
+  "name": "Service Hooks",
+  "version": "0.1.0",
+  "description": "Plans deterministic service-hook rollouts and webhook delivery previews.",
+  "architecture": "native-json",
+  "skill_level": "intermediate",
+  "supported_hosts": [
+    "cli",
+    "tui",
+    "web",
+    "service"
+  ],
+  "capabilities": [
+    {
+      "key": "hook-rollout-planning",
+      "description": "Builds a predictable service-hook configuration plan from event inputs."
+    },
+    {
+      "key": "delivery-preview",
+      "description": "Renders a safe webhook delivery preview without making any network calls."
+    },
+    {
+      "key": "rollout-negotiation",
+      "description": "Publishes lifecycle and host-capability expectations for rollout tooling."
+    }
+  ],
+  "tags": [
+    "service-hooks",
+    "webhooks",
+    "operations",
+    "integration",
+    "advanced"
+  ],
+  "actions": [
+    {
+      "id": "plan-hook-set",
+      "label": "Plan hook set",
+      "description": "Generate deterministic hook endpoints, retries, and ownership hints.",
+      "payload_hint": "{\"service\":\"billing\",\"environment\":\"staging\",\"events\":[\"deploy.succeeded\",\"incident.opened\"],\"target_base_url\":\"https://hooks.internal.example\"}",
+      "contract": {
+        "execution_mode": "sync",
+        "idempotent": true,
+        "mutates_workspace": false,
+        "timeout_ms": 1500,
+        "constraints": {
+          "required": [
+            {
+              "key": "stdout-json",
+              "detail": "Hosts must surface the generated rollout plan."
+            }
+          ],
+          "optional": [
+            {
+              "key": "markdown-output",
+              "detail": "Rollout checklists render best as markdown."
+            }
+          ],
+          "max_payload_bytes": 16384,
+          "network_access": "none",
+          "sandbox_level": "host-mediated"
+        }
+      },
+      "input_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/service-hooks/plan-hook-set-input.schema.json",
+        "version": "1.0.0"
+      },
+      "output_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/service-hooks/plan-hook-set-output.schema.json",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "id": "preview-delivery",
+      "label": "Preview delivery",
+      "description": "Show a webhook request preview with headers, payload, and retry timing.",
+      "payload_hint": "{\"service\":\"billing\",\"event\":\"deploy.succeeded\",\"attempt\":2,\"target_base_url\":\"https://hooks.internal.example\"}",
+      "contract": {
+        "execution_mode": "async",
+        "idempotent": true,
+        "mutates_workspace": false,
+        "timeout_ms": 2500,
+        "async_metadata": {
+          "execution_mode": "async",
+          "detached": false,
+          "supports_streaming": true,
+          "completion_timeout_ms": 20000,
+          "retry_policy": {
+            "max_attempts": 3,
+            "initial_backoff_ms": 500,
+            "max_backoff_ms": 5000,
+            "strategy": "exponential",
+            "retry_on": [
+              "delivery-preview-timeout",
+              "host-retry"
+            ]
+          }
+        },
+        "constraints": {
+          "required": [
+            {
+              "key": "stdout-json",
+              "detail": "Hosts must surface the delivery envelope JSON."
+            }
+          ],
+          "optional": [
+            {
+              "key": "code-output",
+              "detail": "HTTP request previews render best as verbatim code blocks.",
+              "fallback": "Hosts can fall back to JSON-only previews when code blocks are unavailable."
+            },
+            {
+              "key": "async-jobs",
+              "detail": "Async-capable hosts can treat preview generation as a background job.",
+              "fallback": "Foreground execution is still valid because the preview is deterministic."
+            }
+          ],
+          "max_payload_bytes": 8192,
+          "network_access": "none",
+          "sandbox_level": "host-mediated"
+        }
+      },
+      "input_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/service-hooks/preview-delivery-input.schema.json",
+        "version": "1.0.0"
+      },
+      "output_schema": {
+        "format": "json-schema",
+        "reference": "docs/schemas/service-hooks/preview-delivery-output.schema.json",
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "notes": [
+    "Useful for CLI demos, service orchestration smoke tests, and web panels that need structured hook metadata.",
+    "Every action is read-only and emits preview data only.",
+    "Phase 4 uses this plugin to demonstrate lifecycle, async metadata, trust signaling, and capability degradation in one runnable flow."
+  ],
+  "maintenance": {
+    "status": "active",
+    "owner": "platform-integrations",
+    "support_tier": "course-demo",
+    "channel": "stable"
+  },
+  "compatibility": {
+    "strategy": "semver",
+    "protocol_version": "0.1.0",
+    "host_version": {
+      "minimum": "0.1.0",
+      "maximum": "0.3.0"
+    },
+    "tested_hosts": [
+      {
+        "host": "cli",
+        "version": "0.1.0",
+        "notes": "Foreground rollout planning is the default operator workflow."
+      },
+      {
+        "host": "web",
+        "version": "0.1.0",
+        "notes": "Browser hosts can render preview cards with async orchestration."
+      },
+      {
+        "host": "service",
+        "version": "0.1.0",
+        "notes": "Service hosts can reuse the JSON envelopes for health and rollout APIs."
+      }
+    ],
+    "notes": [
+      "The payload and output shapes are additive so rollout tooling can tolerate new metadata fields.",
+      "Retry-preview semantics stay stable across host releases within the declared window."
+    ]
+  },
+  "trust": {
+    "level": "reviewed",
+    "sandbox": "host-mediated",
+    "network": "none",
+    "deterministic": true,
+    "local_only": true,
+    "data_access": [
+      "request-payload-only",
+      "host-generated rollout context"
+    ],
+    "provenance": "bundled-first-party",
+    "notes": [
+      "The plugin does not contact live webhook endpoints.",
+      "Signature and retry artifacts are synthetic so hosts can replay them safely."
+    ]
+  },
+  "lifecycle": {
+    "state": "ready",
+    "stateless": true,
+    "requires_explicit_shutdown": false,
+    "hooks": [
+      "load",
+      "invoke",
+      "health-check",
+      "shutdown"
+    ],
+    "health_probe": "Run preview-delivery with a canned deploy.succeeded payload and verify the generated retry envelope.",
+    "notes": [
+      "The demo remains stateless, but hosts can still wire lifecycle hooks into rollout supervisors.",
+      "Shutdown hooks are metadata-only in this sample and exist to show production cleanup affordances."
+    ]
+  },
+  "execution": {
+    "default_mode": "sync",
+    "supports_async": true,
+    "cancellable": true,
+    "idempotent": true,
+    "progress_reporting": true,
+    "timeout_ms": 3000,
+    "max_concurrency": 6,
+    "async_metadata": {
+      "execution_mode": "async",
+      "detached": false,
+      "supports_streaming": true,
+      "completion_timeout_ms": 20000,
+      "retry_policy": {
+        "max_attempts": 3,
+        "initial_backoff_ms": 500,
+        "max_backoff_ms": 5000,
+        "strategy": "exponential",
+        "retry_on": [
+          "delivery-preview-timeout",
+          "host-retry"
+        ]
+      }
+    },
+    "notes": [
+      "Hosts may degrade async preview generation to foreground execution without changing output semantics.",
+      "Progress updates are optional metadata for hosts that visualize rollout preparation stages."
+    ]
+  },
+  "capability_contract": {
+    "required": [
+      {
+        "key": "stdout-json",
+        "detail": "Hosts must render or forward the structured rollout and delivery metadata."
+      }
+    ],
+    "optional": [
+      {
+        "key": "markdown-output",
+        "detail": "Rollout checklists read best as markdown summaries.",
+        "fallback": "The JSON plan remains authoritative when markdown rendering is unavailable."
+      },
+      {
+        "key": "code-output",
+        "detail": "HTTP previews read best in code blocks.",
+        "fallback": "Hosts can fall back to JSON-only request envelopes."
+      },
+      {
+        "key": "async-jobs",
+        "detail": "Async-capable hosts can queue delivery previews as background work.",
+        "fallback": "Foreground execution stays safe because previews are deterministic and side-effect free."
+      },
+      {
+        "key": "health-hooks",
+        "detail": "Service-style hosts can wire the health probe into operational checks.",
+        "fallback": "Other hosts can document the health probe without executing it automatically."
+      }
+    ],
+    "degradation": [
+      {
+        "feature": "rollout-checklists",
+        "behavior": "If markdown-output is unavailable the plugin returns JSON only and omits checklist formatting.",
+        "severity": "low",
+        "when_missing": [
+          "markdown-output"
+        ]
+      },
+      {
+        "feature": "http-preview-rendering",
+        "behavior": "If code-output is unavailable the host should surface the JSON delivery envelope instead of verbatim HTTP previews.",
+        "severity": "medium",
+        "when_missing": [
+          "code-output"
+        ]
+      },
+      {
+        "feature": "background-preview-jobs",
+        "behavior": "If async-jobs is unavailable the host should run preview-delivery in the foreground.",
+        "severity": "low",
+        "when_missing": [
+          "async-jobs"
+        ]
+      }
+    ],
+    "notes": [
+      "Capability negotiation is intentionally declarative so host-cli inspect output stays readable."
+    ]
+  }
+}

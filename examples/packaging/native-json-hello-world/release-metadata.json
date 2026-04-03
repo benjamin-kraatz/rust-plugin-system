@@ -1,0 +1,28 @@
+{
+  "release_tag": "hello-world-v0.1.0",
+  "published_at": "2026-04-03T00:00:00Z",
+  "artifacts": [
+    {
+      "path": "layout/plugins/hello-world/plugin-manifest.json",
+      "kind": "manifest",
+      "sha256": "d75fa5c28652aef5fd985818d5320559476f9b9f42bf4ae31f4e4eba5dcf5a6b"
+    },
+    {
+      "path": "layout/plugins/hello-world/libhello_world.dylib",
+      "kind": "native-library",
+      "sha256": "REPLACE_WITH_BUILD_OUTPUT_SHA256"
+    }
+  ],
+  "host_compatibility": {
+    "required_runtime": "target/debug",
+    "supported_hosts": [
+      "cli",
+      "tui",
+      "egui",
+      "iced",
+      "dioxus",
+      "web",
+      "service"
+    ]
+  }
+}

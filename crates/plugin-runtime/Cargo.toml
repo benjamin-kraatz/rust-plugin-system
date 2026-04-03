@@ -7,3 +7,6 @@ edition = "2024"
 anyhow = "1.0.102"
 plugin-manifest = { version = "0.1.0", path = "../plugin-manifest" }
 plugin-protocol = { version = "0.1.0", path = "../plugin-protocol" }
+
+[dev-dependencies]
+plugin-test-kit = { version = "0.1.0", path = "../plugin-test-kit" }

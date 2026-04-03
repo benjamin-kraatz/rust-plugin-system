@@ -1,7 +1,10 @@
 use abi_stable::{export_root_module, prefix_type::PrefixTypeTrait, std_types::RString};
 use plugin_abi::{AbiPluginModule, AbiPluginModuleRef};
 use plugin_manifest::{
-    Capability, HostKind, PluginAction, PluginArchitecture, PluginManifest, SkillLevel,
+    Capability, CapabilityContract, CapabilityRequirement, CompatibilityContract, DegradationRule,
+    DegradationSeverity, ExecutionContract, ExecutionMode, HostKind, LifecycleContract,
+    LifecycleHook, LifecycleState, NetworkAccess, PluginAction, PluginArchitecture, PluginManifest,
+    SandboxLevel, SkillLevel, TestedHost, TrustLevel, TrustMetadata, VersionRange, VersionStrategy,
 };
 use plugin_protocol::{OutputKind, PluginResponse};
 
@@ -25,6 +28,57 @@ fn manifest() -> PluginManifest {
         "Suggest commands",
         "Return commands for exploring advanced plugin tracks.",
     )])
+    .with_compatibility(
+        CompatibilityContract::new(VersionStrategy::Semver)
+            .with_protocol_version("0.1.0")
+            .with_host_version(
+                VersionRange::new()
+                    .with_minimum("0.1.0")
+                    .with_maximum("0.2.0"),
+            )
+            .with_tested_hosts(vec![
+                TestedHost::new(HostKind::Cli, "0.1.0"),
+                TestedHost::new(HostKind::Service, "0.1.0"),
+            ]),
+    )
+    .with_trust(
+        TrustMetadata::new(
+            TrustLevel::Reviewed,
+            SandboxLevel::Process,
+            NetworkAccess::None,
+        )
+        .with_data_access(["request-payload-only"])
+        .with_provenance("bundled-first-party"),
+    )
+    .with_lifecycle(
+        LifecycleContract::new(LifecycleState::Ready)
+            .with_hooks(vec![LifecycleHook::Load, LifecycleHook::Invoke]),
+    )
+    .with_execution(
+        ExecutionContract::new(ExecutionMode::Sync)
+            .with_async_support(false)
+            .with_timeout_ms(1_000)
+            .with_notes(["Response generation is immediate and side-effect free."]),
+    )
+    .with_capability_contract(
+        CapabilityContract::new()
+            .with_required(vec![CapabilityRequirement::new(
+                "code-output",
+                "The plugin is most useful when the host can present shell commands verbatim.",
+            )])
+            .with_optional(vec![CapabilityRequirement::new(
+                "stdout-text",
+                "A text fallback keeps the command pack readable in plain terminals.",
+            )])
+            .with_degradation(vec![
+                DegradationRule::new(
+                    "formatted-command-blocks",
+                    "Without code-output the host should fall back to raw text lines.",
+                    DegradationSeverity::Medium,
+                )
+                .when_missing(["code-output"]),
+            ]),
+    )
 }
 
 extern "C" fn manifest_json() -> RString {

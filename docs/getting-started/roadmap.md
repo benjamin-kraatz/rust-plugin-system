@@ -28,3 +28,19 @@ Focus on these questions while you compare:
 ## Stage 4: Explore advanced tracks
 
 Use ABI-stable and WASM examples to learn where native dynamic loading becomes fragile and what alternatives look like.
+
+Recommended reading order:
+
+1. `docs/advanced/architecture-comparison.md`
+2. `docs/advanced/roadmap.md`
+3. `docs/reference/production-contracts.md`
+4. `docs/reference/wasm-sandboxing.md`
+
+## Stage 5: Read the production contracts
+
+Once the three runtime tracks make sense, move into the Phase 4 reference set:
+
+- `docs/reference/version-compatibility.md`
+- `docs/reference/lifecycle-execution.md`
+- `docs/reference/trust-capabilities.md`
+- `docs/reference/testing-packaging.md`

@@ -23,6 +23,7 @@ The goal is not just to show code that works, but to make the trade-offs clear e
 - `crates/` - shared contracts, loaders, runtimes, SDKs, and host support crates
 - `hosts/` - host applications that load plugins at runtime
 - `plugins/` - example plugin implementations across difficulty levels
+- `examples/` - packaging, distribution, and bundle layout assets for local release workflows
 - `docs/` - course material, reference docs, comparisons, and tutorials
 
 ## Current focus
@@ -61,7 +62,11 @@ cargo run -p host-cli -- run hello-world greet '{"name":"Rustacean"}'
 cargo run -p host-cli -- run config-provider merge-layers '{"defaults":{"service":{"port":8080}},"environment":{"service":{"port":8081}},"overrides":{"service":{"host":"127.0.0.1"}}}'
 cargo run -p host-cli -- run data-pipeline summarize-field '{"records":[{"duration":12.5},{"duration":7.5}],"field":"duration"}'
 cargo run -p host-cli -- run abi-stable-greeter greet '{"name":"Rustacean"}'
+cargo run -p host-cli -- run abi-stable-greeter plan-upgrade '{"from_host":"0.1.0","to_host":"0.2.0","consumer":"host-cli"}'
+cargo run -p host-cli -- inspect service-hooks
+cargo run -p host-cli -- run service-hooks preview-delivery '{"service":"billing","event":"deploy.succeeded","attempt":2}'
 cargo run -p host-cli -- run wasm-sandboxed run-demo '{"note":"sandbox"}'
+cargo run -p host-cli -- run web-widget render-widget '{"theme":"dark","variant":"incident"}'
 ```
 
 Then compare richer hosts:
@@ -82,6 +87,27 @@ Start in `docs/overview/index.md`, then follow:
 - `docs/hosts/surface-comparison.md`
 - `docs/plugins/native-json-catalog.md`
 - `docs/snippets/cli-recipes.md`
+
+## Phase 4: production contracts and packaging
+
+Phase 4 adds the documentation layer for the more production-shaped parts of the playground:
+
+- compatibility and version windows
+- lifecycle and execution contracts
+- async execution metadata
+- trust, security, and Wasm sandboxing context
+- capability negotiation and graceful degradation
+- testing with `plugin-test-kit`
+- packaging and local distribution bundle flows
+
+Use this doc path from the root:
+
+- `docs/reference/production-contracts.md`
+- `docs/reference/version-compatibility.md`
+- `docs/reference/lifecycle-execution.md`
+- `docs/reference/trust-capabilities.md`
+- `docs/reference/wasm-sandboxing.md`
+- `docs/reference/testing-packaging.md`
 
 ## License
 

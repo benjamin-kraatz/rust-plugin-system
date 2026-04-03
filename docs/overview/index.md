@@ -63,4 +63,5 @@ The safest and most portable track in the repo. Great for untrusted extensions, 
 2. Start with the CLI host and the simplest plugins.
 3. Use `docs/plugins/native-json-catalog.md` to walk from the foundation plugins into the expanded Phase 2 practical catalog.
 4. Compare the Phase 3 TUI, desktop, web, and service hosts with `docs/hosts/surface-comparison.md`.
-5. Explore ABI-stable and WASM tracks once the basics feel natural.
+5. Explore the Phase 4 contract layer with `docs/reference/production-contracts.md`.
+6. Use the ABI-stable and WASM tracks to connect those contracts back to real runtime trade-offs.

@@ -3717,6 +3717,7 @@ dependencies = [
  "plugin-manifest",
  "plugin-protocol",
  "plugin-runtime",
+ "semver",
  "serde_json",
 ]
 
@@ -6142,7 +6143,9 @@ name = "plugin-manifest"
 version = "0.1.0"
 dependencies = [
  "plugin-capabilities",
+ "plugin-test-kit",
  "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -6151,6 +6154,7 @@ version = "0.1.0"
 dependencies = [
  "plugin-capabilities",
  "plugin-manifest",
+ "plugin-test-kit",
  "serde",
  "serde_json",
 ]
@@ -6162,6 +6166,7 @@ dependencies = [
  "anyhow",
  "plugin-manifest",
  "plugin-protocol",
+ "plugin-test-kit",
 ]
 
 [[package]]
@@ -6177,6 +6182,19 @@ dependencies = [
 [[package]]
 name = "plugin-test-kit"
 version = "0.1.0"
+dependencies = [
+ "abi-stable-greeter",
+ "abi_stable",
+ "hello-world",
+ "plugin-api",
+ "plugin-capabilities",
+ "plugin-manifest",
+ "plugin-protocol",
+ "plugin-sdk",
+ "plugin-wasm",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "plugin-wasm"
@@ -7232,6 +7250,7 @@ dependencies = [
 name = "service-hooks"
 version = "0.1.0"
 dependencies = [
+ "plugin-capabilities",
  "plugin-sdk",
  "serde_json",
 ]

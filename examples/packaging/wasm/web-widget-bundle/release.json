@@ -1,0 +1,9 @@
+{
+  "channel": "stable",
+  "target": "wasm32-wasip1",
+  "hosts": [
+    "cli",
+    "web"
+  ],
+  "installer_hint": "Keep wasm-plugin.json and module.wat together so widget hosts can discover both the manifest and module."
+}

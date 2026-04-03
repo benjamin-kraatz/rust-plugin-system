@@ -1,0 +1,19 @@
+{
+  "package_id": "hello-world-native-json-bundle",
+  "plugin_id": "hello-world",
+  "version": "0.1.0",
+  "release_channel": "stable",
+  "library_name": "libhello_world.dylib",
+  "target_triple": "aarch64-apple-darwin",
+  "bundle_root": "layout",
+  "manifest_path": "layout/plugins/hello-world/plugin-manifest.json",
+  "install_root": "$HOME/.local/share/rust-plugin-system/plugins/hello-world",
+  "required_files": [
+    "layout/plugins/hello-world/plugin-manifest.json",
+    "layout/plugins/hello-world/libhello_world.dylib"
+  ],
+  "post_install_checks": [
+    "cargo run -p host-cli -- list",
+    "cargo run -p host-cli -- inspect hello-world"
+  ]
+}

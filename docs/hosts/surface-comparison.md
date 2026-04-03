@@ -169,4 +169,6 @@ Use it when you want machine-friendly discovery and invocation instead of an int
 
 ## Important note about host support
 
-The `supported_hosts` field is currently used as **host-fit metadata**, not as a hard execution gate. Hosts surface that metadata so readers can compare intent and UX, but they do not block invocation solely because a plugin is labeled for another host.
+The `supported_hosts` field now feeds the shared host-fit assessment in `host-core`. That means hosts can label a plugin as `ready`, `degraded`, or `rejected` for a given surface and fold that result into capability-negotiation summaries.
+
+However, it is still **not** a universal hard execution gate. In the current repo, hosts surface the assessment and warnings, but they do not automatically refuse invocation solely because a plugin declared a narrower support set.

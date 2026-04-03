@@ -1,0 +1,10 @@
+{
+  "channel": "stable",
+  "target": "x86_64-apple-darwin",
+  "hosts": [
+    "cli",
+    "web",
+    "service"
+  ],
+  "installer_hint": "Copy the dylib next to the manifest snapshot when bundling rollout previews for host-cli or service hosts."
+}
