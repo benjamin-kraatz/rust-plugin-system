@@ -1,7 +1,7 @@
 # Publishing the Shared Crates
 
 The shared crates in this workspace are published to the project's self-hosted
-[kellnr](https://kellnr.io) Cargo registry at `https://crates.d-zwei.de`.
+[kellnr](https://kellnr.io) Cargo registry at `https://crates.your-domain.com`.
 
 See [`docs/guides/kellnr.md`](./kellnr.md) for full information on setting up
 and administrating the registry.
@@ -13,7 +13,7 @@ crates:
 
 ```toml
 [registries.dzwei-registry]
-index = "sparse+https://crates.d-zwei.de/api/v1/crates/index/"
+index = "sparse+https://crates.your-domain.com/api/v1/crates/index/"
 ```
 
 Then declare dependencies as usual, naming the registry:

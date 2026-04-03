@@ -6,7 +6,7 @@ support, user management, public and private crates, and optional transparent
 caching of crates.io packages.
 
 This project's shared crates are published to a kellnr instance running at
-`https://crates.d-zwei.de`.
+`https://crates.your-domain.com`.
 
 ---
 
@@ -118,20 +118,20 @@ Add the following environment variables in the **Environment** tab:
 
 | Variable | Value | Notes |
 |---|---|---|
-| `KELLNR_ORIGIN__HOSTNAME` | `crates.d-zwei.de` | Your domain |
+| `KELLNR_ORIGIN__HOSTNAME` | `crates.your-domain.com` | Your domain |
 | `KELLNR_ORIGIN__PORT` | `443` | 443 for HTTPS |
 | `KELLNR_ORIGIN__PROTOCOL` | `https` | Use `http` for local-only |
 | `KELLNR_REGISTRY__CACHE_NUM_THREADS` | `4` | Enables crates.io caching |
 
 ### Step 5 — Custom domain
 
-In the **Domains** tab, add your domain (`crates.d-zwei.de`).  Coolify will
+In the **Domains** tab, add your domain (`crates.your-domain.com`).  Coolify will
 provision a Let's Encrypt certificate automatically if you have a wildcard DNS
 record pointing to your server.
 
 ### Step 6 — Deploy
 
-Click **Deploy**.  After the container starts, open `https://crates.d-zwei.de`
+Click **Deploy**.  After the container starts, open `https://crates.your-domain.com`
 and complete [first-time setup](#first-time-setup).
 
 ---
@@ -140,7 +140,7 @@ and complete [first-time setup](#first-time-setup).
 
 ### Change the admin password
 
-Log in at `https://crates.d-zwei.de` with `admin` / `admin`.
+Log in at `https://crates.your-domain.com` with `admin` / `admin`.
 
 1. Click the user icon (top right) → **Settings**.
 2. Enter a new password and save.
@@ -230,7 +230,7 @@ for user-wide config):
 
 ```toml
 [registries.dzwei-registry]
-index = "sparse+https://crates.d-zwei.de/api/v1/crates/index/"
+index = "sparse+https://crates.your-domain.com/api/v1/crates/index/"
 ```
 
 ### Declare dependencies
@@ -306,7 +306,7 @@ on `plugin-capabilities`):
 
 ## Web UI overview
 
-The kellnr web UI is available at `https://crates.d-zwei.de`.
+The kellnr web UI is available at `https://crates.your-domain.com`.
 
 | Section | What you can do |
 |---|---|
@@ -424,7 +424,7 @@ cargo update --registry dzwei-registry
 Or delete the cached index:
 
 ```bash
-rm -rf ~/.cargo/registry/index/*crates.d-zwei.de*
+rm -rf ~/.cargo/registry/index/*crates.your-domain.com*
 ```
 
 ### Private crate downloaded without auth
@@ -442,10 +442,10 @@ enforce authentication.
 ```nginx
 server {
     listen 443 ssl;
-    server_name crates.d-zwei.de;
+    server_name crates.your-domain.com;
 
-    ssl_certificate     /etc/letsencrypt/live/crates.d-zwei.de/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/crates.d-zwei.de/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/crates.your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/crates.your-domain.com/privkey.pem;
 
     client_max_body_size 50M;  # Allow large .crate uploads
 
@@ -494,7 +494,7 @@ docker rm kellnr
 docker run -d --name kellnr \
   -p 8000:8000 \
   -v kellnr-data:/opt/kellnr/data \
-  -e KELLNR_ORIGIN__HOSTNAME=crates.d-zwei.de \
+  -e KELLNR_ORIGIN__HOSTNAME=crates.your-domain.com \
   -e KELLNR_ORIGIN__PORT=443 \
   -e KELLNR_ORIGIN__PROTOCOL=https \
   ghcr.io/kellnr/kellnr:latest
