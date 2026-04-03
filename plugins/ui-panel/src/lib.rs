@@ -16,15 +16,22 @@ impl JsonPlugin for UiPanelPlugin {
             PluginArchitecture::NativeJson,
             SkillLevel::Intermediate,
         )
-        .with_supported_hosts(vec![HostKind::Egui, HostKind::Iced, HostKind::Dioxus, HostKind::Web])
+        .with_supported_hosts(vec![
+            HostKind::Egui,
+            HostKind::Iced,
+            HostKind::Dioxus,
+            HostKind::Web,
+        ])
         .with_capabilities(vec![Capability::new(
             "panel-content",
             "Produces markdown-friendly content that visual hosts can surface.",
         )])
         .with_tags(["ui", "dashboard", "visual"])
-        .with_actions(vec![
-            PluginAction::new("dashboard-snapshot", "Dashboard snapshot", "Return a compact visual summary."),
-        ])
+        .with_actions(vec![PluginAction::new(
+            "dashboard-snapshot",
+            "Dashboard snapshot",
+            "Return a compact visual summary.",
+        )])
     }
 
     fn invoke(_request: PluginRequest) -> Result<PluginResponse, String> {

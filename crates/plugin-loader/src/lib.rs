@@ -50,8 +50,7 @@ impl LoadedPlugin {
         let response = serde_json::from_str(&response_json).with_context(|| {
             format!(
                 "failed to parse plugin response from '{}':\n{}",
-                self.manifest.id,
-                response_json
+                self.manifest.id, response_json
             )
         })?;
 
@@ -59,7 +58,8 @@ impl LoadedPlugin {
     }
 
     pub fn invoke_and_render(&self, request: &PluginRequest) -> Result<String> {
-        self.invoke(request).map(|response| render_response(&response))
+        self.invoke(request)
+            .map(|response| render_response(&response))
     }
 
     unsafe fn load(path: &Path) -> Result<Self> {
@@ -91,13 +91,14 @@ impl LoadedPlugin {
             .map_err(|error| anyhow!(error))?;
         unsafe { free(manifest_ptr) };
 
-        let manifest = serde_json::from_str::<PluginManifest>(&manifest_json).with_context(|| {
-            format!(
-                "failed to deserialize plugin manifest from '{}':\n{}",
-                path.display(),
-                manifest_json
-            )
-        })?;
+        let manifest =
+            serde_json::from_str::<PluginManifest>(&manifest_json).with_context(|| {
+                format!(
+                    "failed to deserialize plugin manifest from '{}':\n{}",
+                    path.display(),
+                    manifest_json
+                )
+            })?;
 
         Ok(Self {
             _library: library,

@@ -7,3 +7,5 @@ edition = "2024"
 anyhow = "1.0.102"
 host-core = { version = "0.1.0", path = "../../crates/host-core" }
 iced = "0.14.0"
+plugin-manifest = { version = "0.1.0", path = "../../crates/plugin-manifest" }
+plugin-protocol = { version = "0.1.0", path = "../../crates/plugin-protocol" }

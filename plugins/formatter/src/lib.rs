@@ -16,7 +16,12 @@ impl JsonPlugin for FormatterPlugin {
             PluginArchitecture::NativeJson,
             SkillLevel::Basic,
         )
-        .with_supported_hosts(vec![HostKind::Cli, HostKind::Tui, HostKind::Web, HostKind::Service])
+        .with_supported_hosts(vec![
+            HostKind::Cli,
+            HostKind::Tui,
+            HostKind::Web,
+            HostKind::Service,
+        ])
         .with_capabilities(vec![Capability::new(
             "formatting",
             "Reformats JSON values into human-readable output.",
@@ -29,7 +34,8 @@ impl JsonPlugin for FormatterPlugin {
     }
 
     fn invoke(request: PluginRequest) -> Result<PluginResponse, String> {
-        let pretty = serde_json::to_string_pretty(&request.payload).map_err(|error| error.to_string())?;
+        let pretty =
+            serde_json::to_string_pretty(&request.payload).map_err(|error| error.to_string())?;
 
         Ok(PluginResponse::ok(
             "formatter",

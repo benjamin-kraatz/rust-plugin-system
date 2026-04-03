@@ -53,7 +53,10 @@ impl JsonPlugin for HelloWorldPlugin {
                     "hello-world",
                     "greet",
                     "Hello from a runtime-loaded plugin",
-                    format!("The plugin greeted '{name}' for the {:?} host.", request.context.host),
+                    format!(
+                        "The plugin greeted '{name}' for the {:?} host.",
+                        request.context.host
+                    ),
                 )
                 .with_output(OutputKind::Text, "Greeting", format!("Hello, {name}!"))
                 .with_next_step("Try running the same plugin from another host to compare the UX."))

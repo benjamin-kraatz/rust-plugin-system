@@ -4,7 +4,7 @@ use anyhow::{Result, anyhow};
 use plugin_loader::{LoadedPlugin, PluginCatalog, load_plugins_from_directory};
 use plugin_manifest::PluginManifest;
 use plugin_protocol::{HostKind, InvocationContext, PluginRequest, PluginResponse};
-use plugin_runtime::PluginSummary;
+use plugin_runtime::{PluginSummary, render_response as render_plugin_response};
 use serde_json::Value;
 
 pub struct Playground {
@@ -97,6 +97,10 @@ pub fn default_plugin_dir() -> PathBuf {
     std::env::var_os("RUST_PLUGIN_SYSTEM_PLUGIN_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("target/debug"))
+}
+
+pub fn render_response(response: &PluginResponse) -> String {
+    render_plugin_response(response)
 }
 
 fn parse_payload(payload_text: &str) -> Value {

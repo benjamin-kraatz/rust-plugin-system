@@ -3675,6 +3675,7 @@ dependencies = [
  "anyhow",
  "clap",
  "host-core",
+ "plugin-protocol",
 ]
 
 [[package]]
@@ -3695,6 +3696,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "dioxus",
+ "dioxus-desktop",
  "host-core",
 ]
 
@@ -3705,6 +3707,8 @@ dependencies = [
  "anyhow",
  "eframe",
  "host-core",
+ "plugin-manifest",
+ "plugin-protocol",
 ]
 
 [[package]]
@@ -3714,6 +3718,8 @@ dependencies = [
  "anyhow",
  "host-core",
  "iced",
+ "plugin-manifest",
+ "plugin-protocol",
 ]
 
 [[package]]
@@ -3723,6 +3729,7 @@ dependencies = [
  "anyhow",
  "axum",
  "host-core",
+ "plugin-protocol",
  "serde_json",
  "tokio",
 ]
@@ -3734,6 +3741,8 @@ dependencies = [
  "anyhow",
  "crossterm",
  "host-core",
+ "plugin-manifest",
+ "plugin-protocol",
  "ratatui",
 ]
 
@@ -3744,6 +3753,7 @@ dependencies = [
  "anyhow",
  "axum",
  "host-core",
+ "plugin-protocol",
  "serde_json",
  "tokio",
  "tower-http",

@@ -22,9 +22,11 @@ impl JsonPlugin for CommandPackPlugin {
             "Returns curated command snippets for common workflows.",
         )])
         .with_tags(["commands", "teaching", "tooling"])
-        .with_actions(vec![
-            PluginAction::new("suggest-commands", "Suggest commands", "Recommend useful workspace commands."),
-        ])
+        .with_actions(vec![PluginAction::new(
+            "suggest-commands",
+            "Suggest commands",
+            "Recommend useful workspace commands.",
+        )])
     }
 
     fn invoke(_request: PluginRequest) -> Result<PluginResponse, String> {

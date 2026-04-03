@@ -16,15 +16,24 @@ impl JsonPlugin for LoggerPlugin {
             PluginArchitecture::NativeJson,
             SkillLevel::Basic,
         )
-        .with_supported_hosts(vec![HostKind::Cli, HostKind::Tui, HostKind::Web, HostKind::Service])
+        .with_supported_hosts(vec![
+            HostKind::Cli,
+            HostKind::Tui,
+            HostKind::Web,
+            HostKind::Service,
+        ])
         .with_capabilities(vec![Capability::new(
             "logging",
             "Returns log lines that hosts can render or forward.",
         )])
         .with_tags(["operations", "logging", "observability"])
         .with_actions(vec![
-            PluginAction::new("emit-demo-log", "Emit demo log", "Generate a small structured log batch.")
-                .with_payload_hint(r#"{"service":"host-service","level":"info"}"#),
+            PluginAction::new(
+                "emit-demo-log",
+                "Emit demo log",
+                "Generate a small structured log batch.",
+            )
+            .with_payload_hint(r#"{"service":"host-service","level":"info"}"#),
         ])
     }
 

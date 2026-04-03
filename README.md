@@ -35,7 +35,15 @@ The first implementation slice establishes:
 - multiple host apps that consume the same plugin model
 - a documentation backbone for the broader course experience
 
-Start in `docs/overview/index.md`.
+## Quickstart
+
+```bash
+cargo build --workspace
+cargo run -p host-cli -- list
+cargo run -p host-cli -- run hello-world greet '{"name":"Rustacean"}'
+```
+
+Start in `docs/overview/index.md`, then follow `docs/getting-started/quickstart.md`.
 
 ## License
 

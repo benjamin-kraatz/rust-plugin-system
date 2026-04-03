@@ -7,3 +7,4 @@ edition = "2024"
 anyhow = "1.0.102"
 clap = { version = "4.6.0", features = ["derive"] }
 host-core = { version = "0.1.0", path = "../../crates/host-core" }
+plugin-protocol = { version = "0.1.0", path = "../../crates/plugin-protocol" }
