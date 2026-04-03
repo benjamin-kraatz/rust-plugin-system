@@ -15,4 +15,5 @@ plugin-manifest = { version = "0.2.0", path = "../plugin-manifest", registry = "
 plugin-protocol = { version = "0.2.0", path = "../plugin-protocol", registry = "dzwei-registry" }
 
 [dev-dependencies]
-plugin-test-kit = { version = "0.2.0", path = "../plugin-test-kit", registry = "dzwei-registry" }
+# Keep test-kit local-only for tests; avoid publish-time registry dependency cycle.
+plugin-test-kit = { path = "../plugin-test-kit" }

@@ -48,8 +48,9 @@ push-remote = "origin"
 sign-tag = false
 sign-commit = false
 
-# Publish to the registry after bumping.
-publish = true
+# Do not publish as part of cargo-release itself. Publishing interdependent
+# crates is handled by scripts/publish-shared-crates.sh in strict order.
+publish = false
 
 # Verification fails in this workspace because [patch.dzwei-registry] path
 # overrides can produce lockfile checksum mismatches for already-published

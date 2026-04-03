@@ -14,5 +14,6 @@ plugin-capabilities = { version = "0.2.0", path = "../plugin-capabilities", regi
 serde = { version = "1.0.228", features = ["derive"] }
 
 [dev-dependencies]
-plugin-test-kit = { version = "0.2.0", path = "../plugin-test-kit", registry = "dzwei-registry" }
+# Keep test-kit local-only for tests; avoid publish-time registry dependency cycle.
+plugin-test-kit = { path = "../plugin-test-kit" }
 serde_json = "1.0.149"

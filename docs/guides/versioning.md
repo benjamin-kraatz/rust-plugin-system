@@ -20,7 +20,8 @@ local machine and through CI.
     - [Step 1 — detect bump level from commits](#step-1--detect-bump-level-from-commits)
     - [Step 2 — dry-run preview](#step-2--dry-run-preview)
     - [Step 3 — check semver compatibility (patch and minor only)](#step-3--check-semver-compatibility-patch-and-minor-only)
-    - [Step 4 — execute](#step-4--execute)
+    - [Step 4 — execute versioning (no publish)](#step-4--execute-versioning-no-publish)
+    - [Step 5 — publish to kellnr in dependency order](#step-5--publish-to-kellnr-in-dependency-order)
     - [After the release](#after-the-release)
   - [Running a release through CI](#running-a-release-through-ci)
   - [Publishing to kellnr manually (ad-hoc)](#publishing-to-kellnr-manually-ad-hoc)
@@ -182,18 +183,24 @@ If `cargo-semver-checks` reports a breaking change and you intended it, ensure
 your commits contain a proper breaking-change marker (`!` or
 `BREAKING CHANGE:`) so the detected level is `major`.
 
-### Step 4 — execute
+### Step 4 — execute versioning (no publish)
 
 ```bash
 LEVEL=$(./scripts/detect-release-level.sh)
-cargo release "$LEVEL" --execute
+cargo release "$LEVEL" --execute --no-publish
 ```
 
-You will be prompted to confirm each step (version bump, hook, tag, publish).
+### Step 5 — publish to kellnr in dependency order
+
+```bash
+scripts/publish-shared-crates.sh
+```
+
+You will be prompted to confirm each step (version bump, hook, tag, push).
 To skip all prompts:
 
 ```bash
-cargo release patch --execute --no-confirm
+cargo release patch --execute --no-confirm --no-publish
 ```
 
 What happens under the hood:
@@ -204,8 +211,9 @@ What happens under the hood:
    and stages it.
 4. A commit is made: `chore: release v0.1.1`.
 5. A git tag is created: `v0.1.1`.
-6. Each crate is published to `dzwei-registry` in dependency order.
-7. The commit and tag are pushed to `origin`.
+6. Commit and tag are pushed to `origin`.
+7. Shared crates are published by `scripts/publish-shared-crates.sh` in
+  dependency order.
 
 ### After the release
 
@@ -239,6 +247,8 @@ The repository ships `.github/workflows/release.yml`.  Trigger it from the
 - For `patch` and `minor`, it runs `cargo semver-checks` on all publishable
   crates before proceeding. The job is skipped for `major` (breaking changes
   are intentional).
+- Runs `cargo release ... --no-publish` first, then publishes via
+  `scripts/publish-shared-crates.sh` to guarantee dependency order.
 - Uses `GITHUB_TOKEN` (built-in, no setup needed) for the git push and tag.
 - Uses `DZWEI_CRATES_REG_TOKEN` (repository secret) for publishing.
 
