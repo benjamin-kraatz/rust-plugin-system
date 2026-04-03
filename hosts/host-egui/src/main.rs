@@ -153,11 +153,7 @@ impl eframe::App for EguiHostApp {
             )
             .show_inside(ui, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label(
-                        egui::RichText::new(&self.status)
-                            .color(TEXT_MUTED)
-                            .small(),
-                    );
+                    ui.label(egui::RichText::new(&self.status).color(TEXT_MUTED).small());
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         ui.label(
                             egui::RichText::new(format!(
@@ -357,11 +353,13 @@ impl eframe::App for EguiHostApp {
                                             } else {
                                                 "✗ no"
                                             })
-                                            .color(if egui_ok {
-                                                ARCH_NATIVE_COLOR
-                                            } else {
-                                                TEXT_MUTED
-                                            }),
+                                            .color(
+                                                if egui_ok {
+                                                    ARCH_NATIVE_COLOR
+                                                } else {
+                                                    TEXT_MUTED
+                                                },
+                                            ),
                                         );
                                         ui.end_row();
                                     });
@@ -371,12 +369,9 @@ impl eframe::App for EguiHostApp {
 
                         // Actions
                         egui::CollapsingHeader::new(
-                            egui::RichText::new(format!(
-                                "Actions ({})",
-                                manifest.actions.len()
-                            ))
-                            .color(TEXT_PRIMARY)
-                            .strong(),
+                            egui::RichText::new(format!("Actions ({})", manifest.actions.len()))
+                                .color(TEXT_PRIMARY)
+                                .strong(),
                         )
                         .default_open(true)
                         .show(ui, |ui| {
@@ -406,12 +401,9 @@ impl eframe::App for EguiHostApp {
                         {
                             let action = action.clone();
                             egui::CollapsingHeader::new(
-                                egui::RichText::new(format!(
-                                    "Payload Editor — {}",
-                                    action.label
-                                ))
-                                .color(TEXT_PRIMARY)
-                                .strong(),
+                                egui::RichText::new(format!("Payload Editor — {}", action.label))
+                                    .color(TEXT_PRIMARY)
+                                    .strong(),
                             )
                             .default_open(true)
                             .show(ui, |ui| {

@@ -64,11 +64,17 @@ fn main() {
     // Explain the V1 → V2 scenario.
     println!("--- V1 interface ---");
     println!("Fields: manifest_json, invoke_json (#[sabi(last_prefix_field)])");
-    println!("Size  : {} bytes (on this platform)\n", std::mem::size_of::<PluginModuleV1>());
+    println!(
+        "Size  : {} bytes (on this platform)\n",
+        std::mem::size_of::<PluginModuleV1>()
+    );
 
     println!("--- V2 interface ---");
     println!("Fields: manifest_json, invoke_json, capabilities_json (#[sabi(last_prefix_field)])");
-    println!("Size  : {} bytes (on this platform)\n", std::mem::size_of::<PluginModuleV2>());
+    println!(
+        "Size  : {} bytes (on this platform)\n",
+        std::mem::size_of::<PluginModuleV2>()
+    );
 
     println!("Scenario A: V2 host loads a V1 plugin");
     println!("  → manifest_json  : ✅ available");

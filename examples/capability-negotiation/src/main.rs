@@ -45,12 +45,20 @@ fn main() -> Result<()> {
         if manifest.capabilities.is_empty() {
             println!("  capabilities: (none declared)");
         } else {
-            let caps: Vec<&str> = manifest.capabilities.iter().map(|c| c.key.as_str()).collect();
+            let caps: Vec<&str> = manifest
+                .capabilities
+                .iter()
+                .map(|c| c.key.as_str())
+                .collect();
             println!("  capabilities: {}", caps.join(", "));
         }
 
         // Show supported hosts.
-        let hosts: Vec<String> = manifest.supported_hosts.iter().map(|h| format!("{h:?}")).collect();
+        let hosts: Vec<String> = manifest
+            .supported_hosts
+            .iter()
+            .map(|h| format!("{h:?}"))
+            .collect();
         println!("  supported hosts: {}", hosts.join(", "));
 
         // Show capability contract constraints if present.
@@ -82,17 +90,28 @@ fn main() -> Result<()> {
                 host_core::HostFitStatus::Degraded => "⚠️",
                 host_core::HostFitStatus::Rejected => "❌",
             };
-            println!("  {:?}: {icon} {:?} – {}", host, assessment.status, assessment.summary);
+            println!(
+                "  {:?}: {icon} {:?} – {}",
+                host, assessment.status, assessment.summary
+            );
 
             // Show negotiation details when interesting.
             let neg = &assessment.negotiation;
             if !neg.missing_required.is_empty() {
-                let keys: Vec<&str> = neg.missing_required.iter().map(|r| r.key.as_str()).collect();
+                let keys: Vec<&str> = neg
+                    .missing_required
+                    .iter()
+                    .map(|r| r.key.as_str())
+                    .collect();
                 println!("              missing required: {}", keys.join(", "));
             }
             if !neg.degraded_features.is_empty() {
                 for df in &neg.degraded_features {
-                    println!("              degraded: {} → {}", df.feature, df.fallback.as_deref().unwrap_or("(none)"));
+                    println!(
+                        "              degraded: {} → {}",
+                        df.feature,
+                        df.fallback.as_deref().unwrap_or("(none)")
+                    );
                 }
             }
         }

@@ -27,10 +27,9 @@ fn skill_label(s: &SkillLevel) -> &'static str {
 }
 
 fn supports_host(manifest: &PluginManifest, host: &HostKind) -> bool {
-    manifest
-        .supported_hosts
-        .iter()
-        .any(|h| matches!(h, HostKind::Any) || std::mem::discriminant(h) == std::mem::discriminant(host))
+    manifest.supported_hosts.iter().any(|h| {
+        matches!(h, HostKind::Any) || std::mem::discriminant(h) == std::mem::discriminant(host)
+    })
 }
 
 fn main() -> Result<()> {
@@ -52,7 +51,10 @@ fn main() -> Result<()> {
     println!("Plugin directory: {}\n", playground.plugin_dir().display());
 
     // ── Summary table ──
-    println!("{:<24} {:<14} {:<14} Hosts", "Plugin", "Architecture", "Skill");
+    println!(
+        "{:<24} {:<14} {:<14} Hosts",
+        "Plugin", "Architecture", "Skill"
+    );
     println!("{}", "─".repeat(72));
     for m in &manifests {
         let hosts: Vec<String> = m.supported_hosts.iter().map(|h| format!("{h:?}")).collect();
@@ -69,7 +71,10 @@ fn main() -> Result<()> {
     println!("\n--- By Architecture ---");
     let mut by_arch: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     for m in &manifests {
-        by_arch.entry(arch_label(&m.architecture)).or_default().push(&m.name);
+        by_arch
+            .entry(arch_label(&m.architecture))
+            .or_default()
+            .push(&m.name);
     }
     for (arch, names) in &by_arch {
         println!("  {arch}: {}", names.join(", "));
@@ -79,7 +84,10 @@ fn main() -> Result<()> {
     println!("\n--- By Skill Level ---");
     let mut by_skill: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     for m in &manifests {
-        by_skill.entry(skill_label(&m.skill_level)).or_default().push(&m.name);
+        by_skill
+            .entry(skill_label(&m.skill_level))
+            .or_default()
+            .push(&m.name);
     }
     for (skill, names) in &by_skill {
         println!("  {skill}: {}", names.join(", "));

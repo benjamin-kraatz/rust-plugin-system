@@ -64,9 +64,8 @@ fn load_and_invoke(path: &str) -> Result<()> {
             });
             let req_cstr = CString::new(request.to_string())?;
 
-            let invoke_fn: libloading::Symbol<
-                unsafe extern "C" fn(*const c_char) -> *mut c_char,
-            > = lib.get(b"plugin_invoke_json")?;
+            let invoke_fn: libloading::Symbol<unsafe extern "C" fn(*const c_char) -> *mut c_char> =
+                lib.get(b"plugin_invoke_json")?;
 
             let resp_ptr = invoke_fn(req_cstr.as_ptr());
             if !resp_ptr.is_null() {

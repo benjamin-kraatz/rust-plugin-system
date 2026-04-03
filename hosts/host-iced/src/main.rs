@@ -172,15 +172,13 @@ fn view(state: &IcedHostApp) -> Element<'_, Message> {
     .spacing(12);
 
     // -- Sidebar: plugin catalogue ----------------------------------------------
-    let sidebar_list =
-        state
-            .manifests
-            .iter()
-            .fold(column![].spacing(6), |col, manifest| {
-                let is_selected =
-                    state.selected_plugin_id.as_deref() == Some(manifest.id.as_str());
-                col.push(plugin_card(manifest, is_selected))
-            });
+    let sidebar_list = state
+        .manifests
+        .iter()
+        .fold(column![].spacing(6), |col, manifest| {
+            let is_selected = state.selected_plugin_id.as_deref() == Some(manifest.id.as_str());
+            col.push(plugin_card(manifest, is_selected))
+        });
 
     let sidebar = column![
         section_header("Plugin Catalog"),
@@ -249,13 +247,13 @@ fn build_details<'a>(
 
     // Actions
     let actions_header = section_header("Actions");
-    let action_list = manifest.actions.iter().fold(
-        column![].spacing(4),
-        |col, action| {
+    let action_list = manifest
+        .actions
+        .iter()
+        .fold(column![].spacing(4), |col, action| {
             let is_selected = state.selected_action_id.as_deref() == Some(action.id.as_str());
             col.push(action_button(action, is_selected))
-        },
-    );
+        });
 
     // Payload editor
     let payload_section = column![
@@ -291,16 +289,16 @@ fn build_details<'a>(
     let capabilities = if manifest.capabilities.is_empty() {
         column![text("No declared capabilities.").size(13).color(MUTED)]
     } else {
-        manifest.capabilities.iter().fold(
-            column![].spacing(2),
-            |col, cap| {
+        manifest
+            .capabilities
+            .iter()
+            .fold(column![].spacing(2), |col, cap| {
                 col.push(
                     text(format!("•  {} — {}", cap.key, cap.description))
                         .size(13)
                         .color(MUTED),
                 )
-            },
-        )
+            })
     };
 
     // Output
@@ -316,7 +314,8 @@ fn build_details<'a>(
                     width: 1.0,
                     color: BORDER,
                 },
-                shadow: Shadow::default(), snap: false,
+                shadow: Shadow::default(),
+                snap: false,
                 text_color: Some(ACCENT2),
             }),
     ]
@@ -342,10 +341,10 @@ fn section_header(label: &str) -> Element<'_, Message> {
     text(label).size(20).color(ACCENT).into()
 }
 
-fn styled_panel(content: impl Into<Element<'static, Message>>) -> container::Container<'static, Message> {
-    container(content)
-        .padding(20)
-        .style(|_| panel_style())
+fn styled_panel(
+    content: impl Into<Element<'static, Message>>,
+) -> container::Container<'static, Message> {
+    container(content).padding(20).style(|_| panel_style())
 }
 
 fn panel_style() -> container::Style {
@@ -356,7 +355,8 @@ fn panel_style() -> container::Style {
             width: 1.0,
             color: BORDER,
         },
-        shadow: Shadow::default(), snap: false,
+        shadow: Shadow::default(),
+        snap: false,
         text_color: Some(TEXT),
     }
 }
@@ -402,7 +402,8 @@ fn plugin_card(manifest: &PluginManifest, selected: bool) -> Element<'_, Message
                     width: if selected { 1.5 } else { 1.0 },
                     color: border_color,
                 },
-                shadow: Shadow::default(), snap: false,
+                shadow: Shadow::default(),
+                snap: false,
             }
         })
         .into()
@@ -442,38 +443,36 @@ fn action_button(action: &PluginAction, selected: bool) -> Element<'_, Message> 
                     width: if selected { 1.0 } else { 0.5 },
                     color: border_color,
                 },
-                shadow: Shadow::default(), snap: false,
+                shadow: Shadow::default(),
+                snap: false,
             }
         })
         .into()
 }
 
 fn primary_button(label: &str, msg: Message) -> Element<'_, Message> {
-    button(
-        text(label)
-            .size(14)
-            .color(Color::from_rgb(0.0, 0.0, 0.05)),
-    )
-    .padding([6, 16])
-    .on_press(msg)
-    .style(|_theme, status| {
-        let bg = match status {
-            button::Status::Hovered => lighten(ACCENT, 0.10),
-            button::Status::Pressed => lighten(ACCENT, 0.18),
-            _ => ACCENT,
-        };
-        button::Style {
-            background: Some(Background::Color(bg)),
-            text_color: Color::from_rgb(0.0, 0.0, 0.05),
-            border: Border {
-                radius: 6.0.into(),
-                width: 0.0,
-                color: Color::TRANSPARENT,
-            },
-            shadow: Shadow::default(), snap: false,
-        }
-    })
-    .into()
+    button(text(label).size(14).color(Color::from_rgb(0.0, 0.0, 0.05)))
+        .padding([6, 16])
+        .on_press(msg)
+        .style(|_theme, status| {
+            let bg = match status {
+                button::Status::Hovered => lighten(ACCENT, 0.10),
+                button::Status::Pressed => lighten(ACCENT, 0.18),
+                _ => ACCENT,
+            };
+            button::Style {
+                background: Some(Background::Color(bg)),
+                text_color: Color::from_rgb(0.0, 0.0, 0.05),
+                border: Border {
+                    radius: 6.0.into(),
+                    width: 0.0,
+                    color: Color::TRANSPARENT,
+                },
+                shadow: Shadow::default(),
+                snap: false,
+            }
+        })
+        .into()
 }
 
 fn secondary_button(label: &str, msg: Message) -> Element<'_, Message> {
@@ -494,7 +493,8 @@ fn secondary_button(label: &str, msg: Message) -> Element<'_, Message> {
                     width: 1.0,
                     color: BORDER,
                 },
-                shadow: Shadow::default(), snap: false,
+                shadow: Shadow::default(),
+                snap: false,
             }
         })
         .into()
@@ -516,7 +516,8 @@ fn metric_card<'a>(label: &'a str, value: usize) -> Element<'a, Message> {
             width: 1.0,
             color: BORDER,
         },
-        shadow: Shadow::default(), snap: false,
+        shadow: Shadow::default(),
+        snap: false,
         text_color: None,
     })
     .into()
@@ -550,7 +551,8 @@ fn badge<'a>(label: &'a str, color: Color) -> Element<'a, Message> {
                 width: 0.5,
                 color: Color::from_rgba(color.r, color.g, color.b, 0.4),
             },
-            shadow: Shadow::default(), snap: false,
+            shadow: Shadow::default(),
+            snap: false,
             text_color: Some(color),
         })
         .into()

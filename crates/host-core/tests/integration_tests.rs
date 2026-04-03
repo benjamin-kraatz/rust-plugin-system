@@ -1,17 +1,25 @@
-use host_core::{
-    HostFitStatus, Playground, assess_host_fit, build_invocation_context, default_plugin_dir,
-};
+use std::path::PathBuf;
+
+use host_core::{HostFitStatus, Playground, assess_host_fit, build_invocation_context};
 use plugin_protocol::HostKind;
 use serde_json::json;
 
+/// Resolve the workspace-level `target/debug` directory.
+fn plugin_dir() -> PathBuf {
+    // CARGO_MANIFEST_DIR points to crates/host-core; go up twice for the workspace root.
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    manifest_dir
+        .join("../../target/debug")
+        .canonicalize()
+        .unwrap_or_else(|_| manifest_dir.join("../../target/debug"))
+}
+
 /// Load the playground, exiting cleanly if plugins haven't been built yet.
 fn load_playground() -> Playground {
-    match Playground::load_default() {
+    match Playground::load(plugin_dir()) {
         Ok(pg) => pg,
         Err(e) => {
-            eprintln!(
-                "skipping: plugins not built (run `cargo build --workspace` first): {e}"
-            );
+            eprintln!("skipping: plugins not built (run `cargo build --workspace` first): {e}");
             std::process::exit(0);
         }
     }
@@ -88,7 +96,12 @@ fn test_invoke_with_payload() {
 fn test_invoke_unknown_plugin() {
     let pg = load_playground();
 
-    let result = pg.invoke("nonexistent-plugin", "some-action", json!({}), HostKind::Cli);
+    let result = pg.invoke(
+        "nonexistent-plugin",
+        "some-action",
+        json!({}),
+        HostKind::Cli,
+    );
 
     assert!(
         result.is_err(),
@@ -105,7 +118,12 @@ fn test_invoke_unknown_plugin() {
 fn test_invoke_unknown_action() {
     let pg = load_playground();
 
-    let result = pg.invoke("hello-world", "nonexistent-action", json!({}), HostKind::Cli);
+    let result = pg.invoke(
+        "hello-world",
+        "nonexistent-action",
+        json!({}),
+        HostKind::Cli,
+    );
 
     // The plugin binary decides how to handle unknown actions — it may
     // return an Err or a PluginResponse with success == false.
@@ -142,13 +160,13 @@ fn test_manifest_fields_valid() {
 #[test]
 fn test_host_fit_assessment() {
     let pg = load_playground();
-    let plugin_dir = default_plugin_dir();
+    let dir = plugin_dir();
 
     for manifest in pg.manifests() {
         let context = build_invocation_context(
             HostKind::Cli,
             std::env::current_dir().ok().as_deref(),
-            Some(plugin_dir.as_path()),
+            Some(dir.as_path()),
             Some("interactive"),
             None,
         );

@@ -294,11 +294,7 @@ fn SectionHeader(title: String) -> Element {
 }
 
 #[component]
-fn PluginCard(
-    manifest: PluginManifest,
-    selected: bool,
-    on_select: EventHandler<()>,
-) -> Element {
+fn PluginCard(manifest: PluginManifest, selected: bool, on_select: EventHandler<()>) -> Element {
     let arch_color = architecture_color(&manifest);
     let arch_label = format_architecture(&manifest).to_owned();
     let skill_label = format_skill(&manifest).to_owned();

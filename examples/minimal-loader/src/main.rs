@@ -56,9 +56,7 @@ fn main() -> Result<()> {
             .and_then(|a| a["id"].as_str())
             .context("no action id found")?;
 
-        let plugin_id = manifest_json["id"]
-            .as_str()
-            .context("no plugin id found")?;
+        let plugin_id = manifest_json["id"].as_str().context("no plugin id found")?;
 
         // Build a minimal PluginRequest JSON.
         let request = serde_json::json!({
@@ -70,9 +68,9 @@ fn main() -> Result<()> {
 
         let request_cstr = CString::new(request.to_string())?;
 
-        let invoke_fn: libloading::Symbol<unsafe extern "C" fn(*const c_char) -> *mut c_char> =
-            lib.get(b"plugin_invoke_json")
-                .context("Symbol `plugin_invoke_json` not found")?;
+        let invoke_fn: libloading::Symbol<unsafe extern "C" fn(*const c_char) -> *mut c_char> = lib
+            .get(b"plugin_invoke_json")
+            .context("Symbol `plugin_invoke_json` not found")?;
 
         let response_ptr = invoke_fn(request_cstr.as_ptr());
         if response_ptr.is_null() {
