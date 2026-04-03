@@ -2,7 +2,7 @@
   "id": "web-widget",
   "name": "WASM Web Widget",
   "version": "0.1.0",
-  "description": "A second sandboxed WASM plugin that returns widget-oriented output.",
+  "description": "A sandboxed WASM plugin that renders web/UI widgets: badges, data tables, and progress bars.",
   "architecture": "wasm",
   "skill_level": "advanced",
   "supported_hosts": ["cli", "web"],
