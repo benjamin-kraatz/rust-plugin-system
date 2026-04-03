@@ -92,12 +92,10 @@ fn error_response(status: StatusCode, code: &str, message: String) -> (StatusCod
 
 ```rust
 async fn health(State(state): State<AppState>) -> Json<Value> {
-    let manifests = state.playground.manifests();
     Json(json!({
         "status": "ok",
-        "loaded_plugins": manifests.len(),
+        "loaded_plugins": state.playground.manifests().len(),
         "warning_count": state.playground.warnings().len(),
-        "plugin_dir": state.playground.plugin_dir(),
     }))
 }
 ```
