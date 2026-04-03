@@ -17,9 +17,10 @@ local machine and through CI.
   - [Generating a changelog locally](#generating-a-changelog-locally)
   - [Running a release from your local machine](#running-a-release-from-your-local-machine)
     - [Prerequisites](#prerequisites)
-    - [Step 1 — dry-run preview](#step-1--dry-run-preview)
-    - [Step 2 — check semver compatibility (patch and minor only)](#step-2--check-semver-compatibility-patch-and-minor-only)
-    - [Step 3 — execute](#step-3--execute)
+    - [Step 1 — detect bump level from commits](#step-1--detect-bump-level-from-commits)
+    - [Step 2 — dry-run preview](#step-2--dry-run-preview)
+    - [Step 3 — check semver compatibility (patch and minor only)](#step-3--check-semver-compatibility-patch-and-minor-only)
+    - [Step 4 — execute](#step-4--execute)
     - [After the release](#after-the-release)
   - [Running a release through CI](#running-a-release-through-ci)
   - [Publishing to kellnr manually (ad-hoc)](#publishing-to-kellnr-manually-ad-hoc)
@@ -40,13 +41,14 @@ every release bumps all of them to the same version at the same time.
 This simplifies dependency management: downstream projects always pin a single
 version number for all crates from this workspace.
 
-Releases follow [Semantic Versioning](https://semver.org/):
+Releases follow [Semantic Versioning](https://semver.org/). The bump level is
+derived from Conventional Commits since the last tag:
 
 | Bump    | When                                                         |
 | ------- | ------------------------------------------------------------ |
-| `patch` | Bug fixes, documentation, internal refactoring — no API change |
-| `minor` | New backwards-compatible features or public API additions    |
-| `major` | Breaking public API changes                                  |
+| `patch` | Default when no `feat:`/breaking commit appears             |
+| `minor` | At least one `feat:` commit and no breaking commit          |
+| `major` | Any `!` in commit header or `BREAKING CHANGE:` in body      |
 
 ---
 
@@ -133,13 +135,22 @@ git-cliff --output CHANGELOG.md --tag v0.2.0
    export CARGO_REGISTRIES_DZWEI_REGISTRY_TOKEN=<YOUR_TOKEN>
    ```
 
-### Step 1 — dry-run preview
+### Step 1 — detect bump level from commits
+
+Use the helper script (same logic as CI):
+
+```bash
+./scripts/detect-release-level.sh
+```
+
+### Step 2 — dry-run preview
 
 Always preview before executing. This prints exactly what will change without
 writing anything to disk, git, or the registry:
 
 ```bash
-cargo release patch          # or: minor / major
+LEVEL=$(./scripts/detect-release-level.sh)
+cargo release "$LEVEL"
 ```
 
 Do not use `cargo-release release` for normal versioning. In this workspace,
@@ -152,7 +163,7 @@ Review the output carefully:
 - The pre-release hook command (git-cliff invocation)
 - The list of crates that will be published
 
-### Step 2 — check semver compatibility (patch and minor only)
+### Step 3 — check semver compatibility (patch and minor only)
 
 Before a `patch` or `minor` release, verify that no public API has changed
 inadvertently:
@@ -167,13 +178,15 @@ for pkg in plugin-capabilities plugin-manifest plugin-protocol plugin-api \
 done
 ```
 
-If `cargo-semver-checks` reports a breaking change and you intended it, use
-`major` instead of `patch`/`minor`.
+If `cargo-semver-checks` reports a breaking change and you intended it, ensure
+your commits contain a proper breaking-change marker (`!` or
+`BREAKING CHANGE:`) so the detected level is `major`.
 
-### Step 3 — execute
+### Step 4 — execute
 
 ```bash
-cargo release patch --execute
+LEVEL=$(./scripts/detect-release-level.sh)
+cargo release "$LEVEL" --execute
 ```
 
 You will be prompted to confirm each step (version bump, hook, tag, publish).
@@ -213,16 +226,16 @@ The repository ships `.github/workflows/release.yml`.  Trigger it from the
 
 | Input      | Type    | Default  | Description                                                    |
 | ---------- | ------- | -------- | -------------------------------------------------------------- |
-| `level`    | choice  | `patch`  | Version bump level: `patch`, `minor`, or `major`               |
 | `dry_run`  | boolean | `true`   | If `true`, previews the release without writing anything       |
 
 **Recommended workflow:**
 
-1. Trigger with `level=patch` and `dry_run=true`. Review the logs.
+1. Trigger with `dry_run=true`. Review the logs (workflow auto-detects bump level).
 2. If everything looks right, trigger again with `dry_run=false`.
 
 **What CI does additionally:**
 
+- Detects `major`/`minor`/`patch` automatically from Conventional Commits.
 - For `patch` and `minor`, it runs `cargo semver-checks` on all publishable
   crates before proceeding. The job is skipped for `major` (breaking changes
   are intentional).
