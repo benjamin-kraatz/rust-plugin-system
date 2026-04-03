@@ -1,14 +1,38 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+//! Scaffolding for the WASM plugin track.
+//!
+//! This crate is the future home of the sandboxed runtime integration layer.
+//! Keeping the crate in the workspace now makes the repository structure stable
+//! while the working native JSON track grows.
+
+use plugin_manifest::PluginManifest;
+use plugin_protocol::PluginRequest;
+
+#[derive(Debug, Clone)]
+pub struct WasmPluginDescriptor {
+    pub manifest: PluginManifest,
+    pub module_path: String,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl WasmPluginDescriptor {
+    pub fn new(manifest: PluginManifest, module_path: impl Into<String>) -> Self {
+        Self {
+            manifest,
+            module_path: module_path.into(),
+        }
+    }
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+#[derive(Debug, Clone)]
+pub struct WasmInvocationEnvelope {
+    pub request: PluginRequest,
+    pub entrypoint: String,
+}
+
+impl WasmInvocationEnvelope {
+    pub fn new(request: PluginRequest, entrypoint: impl Into<String>) -> Self {
+        Self {
+            request,
+            entrypoint: entrypoint.into(),
+        }
     }
 }
