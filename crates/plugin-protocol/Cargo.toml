@@ -1,6 +1,6 @@
 [package]
 name = "plugin-protocol"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "JSON request and response protocol for plugin invocations."
 publish = true
@@ -10,8 +10,8 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-plugin-capabilities = { version = "0.2.0", path = "../plugin-capabilities", registry = "dzwei-registry" }
-plugin-manifest = { version = "0.2.0", path = "../plugin-manifest", registry = "dzwei-registry" }
+plugin-capabilities = { version = "0.2.1", path = "../plugin-capabilities", registry = "dzwei-registry" }
+plugin-manifest = { version = "0.2.1", path = "../plugin-manifest", registry = "dzwei-registry" }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 

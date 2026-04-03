@@ -1,15 +1,15 @@
 [package]
 name = "host-web"
 publish = false
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
 axum = "0.8.8"
-host-core = { version = "0.2.0", path = "../../crates/host-core" }
-plugin-manifest = { version = "0.2.0", path = "../../crates/plugin-manifest" }
-plugin-protocol = { version = "0.2.0", path = "../../crates/plugin-protocol" }
+host-core = { version = "0.2.1", path = "../../crates/host-core" }
+plugin-manifest = { version = "0.2.1", path = "../../crates/plugin-manifest" }
+plugin-protocol = { version = "0.2.1", path = "../../crates/plugin-protocol" }
 serde_json = "1.0.149"
 tokio = { version = "1.50.0", features = ["full"] }
 tower-http = { version = "0.6.8", features = ["fs", "trace"] }

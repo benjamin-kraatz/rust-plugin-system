@@ -1,7 +1,7 @@
 [package]
 name = "abi-stable-command-pack"
 publish = false
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 
 [lib]
@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 abi_stable = "0.11.3"
-plugin-abi = { version = "0.2.0", path = "../../crates/plugin-abi" }
-plugin-manifest = { version = "0.2.0", path = "../../crates/plugin-manifest" }
-plugin-protocol = { version = "0.2.0", path = "../../crates/plugin-protocol" }
+plugin-abi = { version = "0.2.1", path = "../../crates/plugin-abi" }
+plugin-manifest = { version = "0.2.1", path = "../../crates/plugin-manifest" }
+plugin-protocol = { version = "0.2.1", path = "../../crates/plugin-protocol" }
 serde_json = "1.0.149"

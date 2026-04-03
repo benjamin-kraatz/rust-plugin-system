@@ -1,6 +1,6 @@
 [package]
 name = "plugin-wasm"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Wasm plugin loading and helper utilities for sandboxed plugins."
 publish = true
@@ -11,8 +11,8 @@ rust-version.workspace = true
 
 [dependencies]
 anyhow = "1.0.102"
-plugin-manifest = { version = "0.2.0", path = "../plugin-manifest", registry = "dzwei-registry" }
-plugin-protocol = { version = "0.2.0", path = "../plugin-protocol", registry = "dzwei-registry" }
+plugin-manifest = { version = "0.2.1", path = "../plugin-manifest", registry = "dzwei-registry" }
+plugin-protocol = { version = "0.2.1", path = "../plugin-protocol", registry = "dzwei-registry" }
 serde_json = "1.0.149"
 wat = "1.245.0"
 wasmtime = "43.0.0"
