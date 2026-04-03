@@ -1,5 +1,6 @@
 [registry]
 default = "dzwei-registry"
+global-credential-providers = ["cargo:token"]
 
 [registries.dzwei-registry]
 index = "sparse+https://crates.d-zwei.de/api/v1/crates/"
