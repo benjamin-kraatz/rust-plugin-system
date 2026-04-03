@@ -119,14 +119,15 @@ jobs:
               continue
             fi
 
-            # Skip if this version is already in the registry.
-            HTTP_STATUS=$(curl -so /dev/null -w "%{http_code}" \
-              "${REGISTRY_URL}/api/v1/crates/${PKG}/${VERSION}")
-            if [ "$HTTP_STATUS" = "200" ]; then
-              echo "  already published – skipping."
-              continue
-            fi
-
-            cargo publish --registry dzwei-registry -p "$PKG"
-            echo "  published."
+            publish_out=$(cargo publish --registry dzwei-registry -p "$PKG" 2>&1) && {
+              echo "$publish_out"
+              echo "  published."
+            } || {
+              if echo "$publish_out" | grep -q "already exists"; then
+                echo "  already published – skipping."
+              else
+                echo "$publish_out" >&2
+                exit 1
+              fi
+            }
           done
