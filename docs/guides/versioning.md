@@ -142,6 +142,10 @@ writing anything to disk, git, or the registry:
 cargo release patch          # or: minor / major
 ```
 
+Do not use `cargo-release release` for normal versioning. In this workspace,
+that attempts a no-bump publish flow and can fail in dry-run mode while waiting
+for dependencies that were intentionally not uploaded.
+
 Review the output carefully:
 - Each crate's version bump (`0.1.0 → 0.1.1`)
 - Downstream dependency updates within the workspace
